@@ -3,7 +3,6 @@
 #include "SSocket.h"
 #include "Log.h"
 #include <process.h>
-#include "SUserContainer.h"
 
 unsigned WINAPI Accept(LPVOID pAcceptOL);
 unsigned WINAPI WorkThread(void* pOL);
@@ -44,7 +43,7 @@ BOOL IOCP::CreateIOCP()
 		return FALSE;
 	}
 
-//	InitializeCriticalSection(&m_criticalsection);
+	//	InitializeCriticalSection(&m_criticalsection);
 
 	m_handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 
@@ -167,19 +166,19 @@ BOOL IOCP::GetCompletionStatus(LPDWORD pdwOutBytesTransferred, ULONG_PTR * pOutC
 }
 
 BOOL IOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, WSAOVERLAPPED * pOverlapped)
-{	
+{
 	BOOL result = PostQueuedCompletionStatus(m_handle, CompleitonKey, dwBytesTransferred, pOverlapped);
 
 	if (!result)
 	{
-	#ifdef _DEBUG
-			char buff[100];
-			int ret = WSAGetLastError();
-			wsprintfA(buff, "[ERROR : %d] 에러 발생[%s] \n", ret, __FUNCTION__);
-			OutputDebugStringA(buff);
-	#else
-			SOCKET_ERROR_LOG_CODE
-	#endif
+#ifdef _DEBUG
+		char buff[100];
+		int ret = WSAGetLastError();
+		wsprintfA(buff, "[ERROR : %d] 에러 발생[%s] \n", ret, __FUNCTION__);
+		OutputDebugStringA(buff);
+#else
+		SOCKET_ERROR_LOG_CODE
+#endif
 	}
 
 	return TRUE;
@@ -192,7 +191,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 {
 	//WinSocket listen_socket;
 	SSocket accept_socket;
-//	SocketTool tool;
+	//	SocketTool tool;
 	SOCKET client_socket;
 	SOCKADDR_IN client_addr;
 
@@ -207,7 +206,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 	accept_socket.SetAddr(AF_INET, 14483, INADDR_ANY);
 
 
-	if( !SocketTool::Bind(accept_socket.socket, accept_socket.addr) )
+	if (!SocketTool::Bind(accept_socket.socket, accept_socket.addr))
 	{
 
 #ifdef _DEBUG
@@ -219,7 +218,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		SOCKET_ERROR_LOG_CODE
 #endif
 
-		accept_socket.CloseSocket();
+			accept_socket.CloseSocket();
 		return 0;
 		//	Log::Instance()->WriteLog("Project-socket", "Socket Bind Error");
 	}
@@ -329,20 +328,18 @@ unsigned WINAPI WorkThread(void* pOL)
 		if (pOverlapped->io_type == IO_RECV)
 		{
 			//리시브 패킷 처리 함수
-			pCompletionKey->m_puser->RecvGamePacket(DwNumberBytes);
+			pCompletionKey->m_puser->RecvPacket(DwNumberBytes);
 		}
-		else if (pOverlapped->io_type == )
+		else if (pOverlapped->io_type == IO_SENDING)
 		{
-			//샌드 완료 함수
-			//지금은 특별히 없는 것같은데?
+			//송신 처리 함수
+			pCompletionKey->m_puser->CheckSendPacket();
 		}
 		else // IO_NONE 혹은 에러
 		{
 
 		}
-
 	}
-
 
 	return 0;
 }

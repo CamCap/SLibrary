@@ -24,6 +24,8 @@ public:
 
 #pragma pack(pop)
 
+///////////////
+
 ////////////////////////////////////////////////////////////
 
 
@@ -64,12 +66,10 @@ private:
 	int m_tail;
 };
 
+#define BTZ_PACKET_LENGTH 10
 
-///////////////
 
-#define MAX_PACKET_LENGTH 10
-
-typedef class SPacketContainer
+class SPacketContainer
 {
 public:
 	explicit SPacketContainer();
@@ -81,9 +81,8 @@ public:
 
 private:
 	std::vector<BTZPacket*> m_VecPacket;
-	const int m_VecSize;
-}PacketCon;
-
+	int m_VecSize;
+};
 
 #endif
 

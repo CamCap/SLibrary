@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Packet.h"
 
-
 template<typename T>
 SCircleQueue<T>::SCircleQueue()
 	:m_front(0), m_tail(0), Container<T>()
@@ -79,16 +78,20 @@ void SCircleQueue<T>::InitQueue()
 	m_front = size;
 }
 
+
+//////////////////////////////////////////////////////
+
+
 //////////////////////////////////////////////////
 
 SPacketContainer::SPacketContainer()
-	:m_VecSize(MAX_PACKET_LENGTH)
+	: m_VecSize(BTZ_PACKET_LENGTH)
 {
 
 }
 
 SPacketContainer::SPacketContainer(int size)
-	:m_VecSize(size)
+	: m_VecSize(size)
 {
 	BTZPacket* packet = NULL;
 

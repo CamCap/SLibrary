@@ -1,5 +1,5 @@
 #pragma once
-#include "CriticalSection.h"
+#include "SUserContainer.h"
 
 #define MAX_WORKER_THREAD 100
 #define ListenQueue 10
@@ -56,3 +56,4 @@ private:
 
 	static IOCP* m_instance;
 };
+

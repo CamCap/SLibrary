@@ -1,8 +1,8 @@
 #pragma once
-#pragma comment(lib, "ws2_32.lib")
 
 #include <WinSock2.h>
 #include "header.h"
+#include <Windows.h>
 
 class SCriticalSection
     :public CRITICAL_SECTION
