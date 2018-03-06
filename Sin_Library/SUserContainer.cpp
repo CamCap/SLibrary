@@ -16,7 +16,7 @@ UserContainer* UserContainer::GetInstance()
 UserContainer::UserContainer()
 	:m_cs()
 {
-	SUser* pUser;
+	SPeer* pUser;
 	for (int i = 0; i < MAX_USER_COUNT; i++)
 	{
 		pUser = &m_user[i];
@@ -32,7 +32,7 @@ UserContainer::~UserContainer()
 }
 
 
-void UserContainer::Push_EmptyUser(SUser* puser)
+void UserContainer::Push_EmptyUser(SPeer* puser)
 {
 	if (puser == NULL)
 		return;
@@ -52,20 +52,20 @@ void UserContainer::Push_EmptyUser(SUser* puser)
 }
 
 
-void UserContainer::Add_CurUser(int userid, SUser* puser)
+void UserContainer::Add_CurUser(int userid, SPeer* puser)
 {
 	if (puser == NULL)
 		return; \
 
 		CSLOCK(m_cs)
 	{
-		m_mapConnectUser.insert(std::pair<int, SUser*>(userid, puser));
+		m_mapConnectUser.insert(std::pair<int, SPeer*>(userid, puser));
 	}
 
 	return;
 }
 
-SUser* UserContainer::Pop_EmptyUser()
+SPeer* UserContainer::Pop_EmptyUser()
 {
 	//SUser* pUser = NULL;
 
@@ -77,7 +77,7 @@ SUser* UserContainer::Pop_EmptyUser()
 
 	//	this->m_vecEmptyUser.erase
 
-	SUser* puser = NULL;
+	SPeer* puser = NULL;
 
 	CSLOCK(m_cs)
 	{

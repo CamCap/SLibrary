@@ -101,7 +101,7 @@ private:
 
 #define USER_BUFFER_SIZE 1024
 
-class SUser
+class SPeer
 {
 public:
 	DECLARE_ENUM(
@@ -111,8 +111,8 @@ public:
 		);
 
 public:
-	explicit SUser();
-	~SUser();
+	explicit SPeer();
+	~SPeer();
 
 public:
 	void Send(BTZPacket* packet);
@@ -121,12 +121,12 @@ public:
 	void InitUser(SOCKET socket, SOCKADDR_IN addr, int userid);
 
 	BOOL RecvPacket(int size);
-private:
+protected:
 	void ErrorHandle(const char* function);
 	virtual void PacketProcess(BTZPacket* packet);
 	void Recv();
 
-private:
+protected:
 	SSession m_session;
 	SCircleQueue m_queue;
 	char recv_buffer[USER_BUFFER_SIZE];
@@ -137,9 +137,7 @@ private:
 
 	SCriticalSection m_cs;
 
-	std::string m_id;
-	bool m_sex;		//false면 남자, true면 여자
-	int m_userid;
+	int m_id;
 };
 
 

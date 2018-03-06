@@ -7,8 +7,8 @@
 
 #define MAX_USER_COUNT 500
 
-typedef std::vector<SUser*> VECTOR_USER;
-typedef std::map<int, SUser*> MAP_USER;
+typedef std::vector<SPeer*> VECTOR_USER;
+typedef std::map<int, SPeer*> MAP_USER;
 
 struct SOCKET_CONTEXT;
 
@@ -20,10 +20,10 @@ public:
 public:
 	//	BOOL ReigsterUser(SUser user)
 
-	SUser* Pop_EmptyUser();
-	void Push_EmptyUser(SUser* puser);
+	SPeer* Pop_EmptyUser();
+	void Push_EmptyUser(SPeer* puser);
 
-	void Add_CurUser(int userid, SUser* puser);
+	void Add_CurUser(int userid, SPeer* puser);
 	void Remove_CurUser(SOCKET sock);
 
 	void DisConnect(SOCKET_CONTEXT* pUser);
@@ -41,7 +41,7 @@ private:
 
 	SCriticalSection m_cs;
 
-	SUser m_user[MAX_USER_COUNT];
+	SPeer m_user[MAX_USER_COUNT];
 
 private:
 	static UserContainer* m_instance;

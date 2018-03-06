@@ -5,13 +5,13 @@
 #define ListenQueue 10
 #define USER_ID_INDEX 100
 
-class SUser;
+class SPeer;
 
 struct SOCKET_CONTEXT
 {
 	SOCKET m_socket;
 	SOCKADDR_IN m_addr;
-	SUser* m_puser;
+	SPeer* m_puser;
 };
 
 typedef unsigned int(__stdcall *IOCPThread)(void*);

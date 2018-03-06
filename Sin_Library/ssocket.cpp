@@ -136,18 +136,18 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 ////////////////////////////////////////////////////////////////////////////
 
 
-SUser::SUser()
+SPeer::SPeer()
 	:m_vecSendPacket(0), m_vecStandPacket(), m_session()
 {
 }
 
-SUser::~SUser()
+SPeer::~SPeer()
 {
 	m_session.CloseSocket();
 }
 
 
-void SUser::Send(BTZPacket* packet)
+void SPeer::Send(BTZPacket* packet)
 {
 	BTZPacket* sendpacket = NULL;
 	m_vecStandPacket.Pop(sendpacket);
@@ -165,7 +165,7 @@ void SUser::Send(BTZPacket* packet)
 	CheckSendPacket();
 }
 
-void SUser::Recv()
+void SPeer::Recv()
 {
 	bool result = m_session.Recv();
 
@@ -177,7 +177,7 @@ void SUser::Recv()
 }
 
 
-void SUser::CheckSendPacket()
+void SPeer::CheckSendPacket()
 {
 	BTZPacket* sendpacket = NULL;
 	m_vecSendPacket.Pop(sendpacket);
@@ -200,19 +200,19 @@ void SUser::CheckSendPacket()
 	}
 }
 
-void SUser::ReleaseSocket()
+void SPeer::ReleaseSocket()
 {
 	m_session.CloseSocket();
 }
 
-void SUser::InitUser(SOCKET socket, SOCKADDR_IN addr, int userid)
+void SPeer::InitUser(SOCKET socket, SOCKADDR_IN addr, int userid)
 {
 	m_session.InitSession(socket, addr, recv_buffer, USER_BUFFER_SIZE);
-	m_userid = userid;
+	m_id = userid;
 	Recv();
 }
 
-BOOL SUser::RecvPacket(int size)
+BOOL SPeer::RecvPacket(int size)
 {
 	BTZPacket* packet = NULL;
 
@@ -241,7 +241,7 @@ BOOL SUser::RecvPacket(int size)
 	return TRUE;
 }
 
-void SUser::PacketProcess(BTZPacket * packet)
+void SPeer::PacketProcess(BTZPacket * packet)
 {
 	//	SE SESSIONSTATEToString(SEND_COMPLETE);
 	SSession::SESSIONSTATEToString(SSession::RECV_COMPLETE);
@@ -252,7 +252,7 @@ void SUser::PacketProcess(BTZPacket * packet)
 }
 
 
-void SUser::ErrorHandle(const char* function)
+void SPeer::ErrorHandle(const char* function)
 {
 #ifdef _DEBUG
 	char buff[100];
