@@ -1,5 +1,8 @@
 #pragma once
 
+#define SERVER_PORT 14483
+#define SERVER_IP "127.0.0.1"
+
 //////////////////////////////////////////////////////////////////
 
 #define SOCKET_INVALID_CHECK(SOCK) if(SOCK == INVALID_SOCKET) return FALSE;

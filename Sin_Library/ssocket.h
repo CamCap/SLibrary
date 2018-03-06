@@ -3,6 +3,7 @@
 #include "header.h"
 #include <WinSock2.h>
 #include "Packet.h"
+#include "CriticalSection.h"
 
 class SSocket
 {
@@ -49,7 +50,6 @@ SSession을 멤버변수로 가지는 user 클래스를 만들어서  유저 정보도 가지자.
 #define IO_SENDING 3
 #define IO_NONE 0
 
-#define MAX_BUFF_SIZE 1024
 
 struct IO_OVERLAPPED :public WSAOVERLAPPED
 {
@@ -80,15 +80,15 @@ public:
 	BOOL Recv();	
 
 	BOOL Send(char* buffer, int len, int& errorcode);
-	void SendComplete() { m_recvOL->io_type = IO_SEND_STAND; }
+	void SendComplete() { m_recvOL.io_type = IO_SEND_STAND; }
 
 private:
 	void SetSessionInfo(); // ip, port, cntError초기화
 
 private:
 	SSocket m_socket;
-	IO_OVERLAPPED* m_recvOL;
-	IO_OVERLAPPED* m_sendOL;
+	IO_OVERLAPPED m_recvOL;
+	IO_OVERLAPPED m_sendOL;
 
 	// SCriticalSection m_cs;
 
@@ -99,7 +99,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////
 
-#define USER_BUFFER_SIZE 10000
+#define USER_BUFFER_SIZE 1024
 
 class SUser
 {
@@ -123,17 +123,19 @@ public:
 	BOOL RecvPacket(int size);
 private:
 	void ErrorHandle(const char* function);
-	void PacketProcess(BTZPacket* packet);
+	virtual void PacketProcess(BTZPacket* packet);
 	void Recv();
 
 private:
 	SSession m_session;
-	SCircleQueue<char> m_queue;
+	SCircleQueue m_queue;
 	char recv_buffer[USER_BUFFER_SIZE];
 
 
 	SPacketContainer m_vecSendPacket; // 보내는 패킷 벡터
 	SPacketContainer m_vecStandPacket; // 사용대기중인 패킷 벡터
+
+	SCriticalSection m_cs;
 
 	std::string m_id;
 	bool m_sex;		//false면 남자, true면 여자
@@ -156,14 +158,14 @@ int SocketTool::Bind(IN SOCKET sock, IN SOCKADDR_IN addr)
 {
 	SOCKET_INVALID_CHECK(sock);
 
-	return (::bind(sock, (SOCKADDR*)&addr, sizeof(addr)) != INVALID_SOCKET) ? TRUE : WSAGetLastError();
+	return ::bind(sock, (SOCKADDR*)&addr, sizeof(addr));
 }
 
 int SocketTool::Connect(IN SOCKET socket, IN SOCKADDR_IN addr)
 {
 	SOCKET_INVALID_CHECK(socket);
 
-	return (::connect(socket, (SOCKADDR*)&addr, sizeof(addr)) != INVALID_SOCKET) ? TRUE : WSAGetLastError();
+	return ::connect(socket, (SOCKADDR*)&addr, sizeof(addr));
 }
 
 SOCKET SocketTool::Accept(IN SOCKET socket, IN SOCKADDR_IN& addr)
@@ -183,7 +185,7 @@ int SocketTool::Listen(IN SOCKET socket, IN short len)
 {
 	SOCKET_INVALID_CHECK(socket);
 
-	return (::listen(socket, len) != INVALID_SOCKET) ? true : WSAGetLastError();
+	return ::listen(socket, len);
 }
 
 //

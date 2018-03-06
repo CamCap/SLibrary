@@ -35,7 +35,7 @@ void SSocket::InitSocket(SOCKET socket, SOCKADDR_IN addr)
 	SetAddr(addr);
 }
 
-void SSocket::SetAddr(int family, int addr, u_short port)
+void SSocket::SetAddr(int family, int port, u_short addr)
 {
 	memset(&m_addr, 0, sizeof(m_addr));
 
@@ -53,37 +53,32 @@ void SSocket::SetAddr(SOCKADDR_IN sockaddr)
 
 SSession::SSession()
 {
-	m_recvOL = new IO_OVERLAPPED();
-	m_sendOL = new IO_OVERLAPPED();
-
-	m_recvOL->io_type = IO_RECV;
-	m_recvOL->io_type = IO_SEND_STAND;
+	m_recvOL.io_type = IO_RECV;
+	m_sendOL.io_type = IO_SEND_STAND;
 }
 
 SSession::~SSession()
 {
-	SAFE_DELETE(m_recvOL);
-	SAFE_DELETE(m_sendOL);
 }
 
 
 void SSession::InitSession(SOCKET socket, SOCKADDR_IN addr, char* recvbuffer, int recvlen)
 {
 
-	m_recvOL->io_buff.buf = recvbuffer;
-	m_recvOL->io_buff.len = recvlen;
+	m_recvOL.io_buff.buf = recvbuffer;
+	m_recvOL.io_buff.len = recvlen;
 
 	m_socket.InitSocket(socket, addr);
 }
 
 void SSession::CloseSocket()
 {
-	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)m_recvOL, NULL);
+	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
 
 	m_socket.CloseSocket();
 
-	memset(m_recvOL, 0, sizeof(IO_OVERLAPPED));
-	memset(m_sendOL, 0, sizeof(IO_OVERLAPPED));
+	memset(&m_recvOL, 0, sizeof(IO_OVERLAPPED));
+	memset(&m_sendOL, 0, sizeof(IO_OVERLAPPED));
 }
 
 void SSession::SetSessionInfo()
@@ -94,15 +89,16 @@ void SSession::SetSessionInfo()
 BOOL SSession::Recv()
 {
 	SOCKET_INVALID_CHECK(m_socket.socket);
+	if (m_recvOL.io_type == IO_NONE) return false;
 
 
-	DWORD    dwRecvNumBytes = 0;
-	DWORD    dwFlags = 0;
+	DWORD dwRecvNumBytes = 0;
+	DWORD dwFlags = 0;
 
-	memset(m_recvOL, 0, sizeof(WSAOVERLAPPED));
-	m_recvOL->io_type = IO_RECV;
+	memset(&m_recvOL, 0, sizeof(WSAOVERLAPPED));
+	m_recvOL.io_type = IO_RECV;
 
-	int result = WSARecv(m_socket.socket, &m_recvOL->io_buff, 1, &dwRecvNumBytes, &dwFlags, (WSAOVERLAPPED*)&m_recvOL, NULL);
+	int result = WSARecv(m_socket.socket, &m_recvOL.io_buff, 1, &dwRecvNumBytes, &dwFlags, (WSAOVERLAPPED*)&m_recvOL, NULL);
 
 	if (result == SOCKET_ERROR)
 		return FALSE;
@@ -114,7 +110,7 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 {
 	SOCKET_INVALID_CHECK(m_socket.socket);
 
-	if (m_sendOL->io_type == IO_SENDING) {
+	if (m_sendOL.io_type == IO_SENDING) {
 		errcode = SESSIONSTATE::ERROR_SENDING;
 		return FALSE;
 	}
@@ -122,13 +118,13 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 	DWORD dwflag = 0;
 	DWORD dwsendbyte = 0;
 
-	m_sendOL->io_buff.buf = buffer;
-	m_sendOL->io_buff.len = len;
+	m_sendOL.io_buff.buf = buffer;
+	m_sendOL.io_buff.len = len;
 
-	memset(m_sendOL, 0, sizeof(WSAOVERLAPPED));
-	m_sendOL->io_type = IO_SENDING;
+	memset(&m_sendOL, 0, sizeof(WSAOVERLAPPED));
+	m_sendOL.io_type = IO_SENDING;
 
-	int result = WSASend(m_socket.socket, &m_sendOL->io_buff, 1, &dwsendbyte, dwflag, (WSAOVERLAPPED*)&m_sendOL, NULL);
+	int result = WSASend(m_socket.socket, &m_sendOL.io_buff, 1, &dwsendbyte, dwflag, (WSAOVERLAPPED*)&m_sendOL, NULL);
 	//LPWSAOVERLAPPED_COMPLETION_ROUTINE
 	if (result == SOCKET_ERROR)
 	{
@@ -150,16 +146,6 @@ SUser::~SUser()
 	m_session.CloseSocket();
 }
 
-void SUser::Recv()
-{
-	BOOL result = m_session.Recv();
-
-	if ((result == FALSE) && (ERROR_IO_PENDING != WSAGetLastError()))
-	{
-		//에러제어
-		ErrorHandle(__FUNCTION__);
-	}
-}
 
 void SUser::Send(BTZPacket* packet)
 {
@@ -177,6 +163,17 @@ void SUser::Send(BTZPacket* packet)
 
 	//m_session.Send((char*)sendpacket, sendpacket->packet_size);
 	CheckSendPacket();
+}
+
+void SUser::Recv()
+{
+	bool result = m_session.Recv();
+
+	if ((result == FALSE) && (ERROR_IO_PENDING != WSAGetLastError()))
+	{
+		//에러제어
+		ErrorHandle(__FUNCTION__);
+	}
 }
 
 
@@ -212,29 +209,34 @@ void SUser::InitUser(SOCKET socket, SOCKADDR_IN addr, int userid)
 {
 	m_session.InitSession(socket, addr, recv_buffer, USER_BUFFER_SIZE);
 	m_userid = userid;
+	Recv();
 }
 
 BOOL SUser::RecvPacket(int size)
 {
 	BTZPacket* packet = NULL;
 
-	if (m_queue.Push(recv_buffer, size) == FALSE)
+	CSLOCK(m_cs)
 	{
-		//UnLock();
-		return FALSE;
+
+		if (m_queue.Push(recv_buffer, size) == FALSE)
+		{
+			//UnLock();
+			return FALSE;
+		}
+
+		while (true)
+		{
+			m_queue.Pop(packet);
+
+			if (packet == NULL) break;
+
+			GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
+			PacketProcess(packet);
+		}
 	}
 
-	while (true)
-	{
-		m_queue.Pop((char*)packet);
-
-		if (packet == NULL) break;
-
-		GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
-		PacketProcess(packet);
-	}
-
-	Recv();
+	this->Recv();
 
 	return TRUE;
 }
@@ -257,6 +259,7 @@ void SUser::ErrorHandle(const char* function)
 	int ret = WSAGetLastError();
 	wsprintfA(buff, "[ERROR : %d] 에러 발생[%s] \n", ret, function);
 	OutputDebugStringA(buff);
+	printf("%s", buff);
 #else
 	SOCKET_ERROR_LOG_CODE;
 #endif

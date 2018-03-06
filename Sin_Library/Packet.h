@@ -35,7 +35,6 @@ public:
 //이차원배열이 되지않도록 조심하자!
 //데이터만 직렬화가능. 파일은 부스트의 도움을 받아서 확장해야함
 
-template<typename T>
 class SCircleQueue
 {
 public:
@@ -54,14 +53,14 @@ public:
 	~SCircleQueue();
 
 public:
-	bool Push(IN T* data, IN short size);
-	void Pop(OUT T* data);
+	bool Push(IN char* data, IN short size);
+	void Pop(OUT BTZPacket* data);
 
 private:
 	void InitQueue();
 
 private:
-	T * m_data;
+	char * m_data;
 	int m_front;
 	int m_tail;
 };

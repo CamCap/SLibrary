@@ -28,7 +28,7 @@ GameMessageManager * GameMessageManager::Instnace()
 void GameMessageManager::DestoryMsg()
 {
 	GameMSG* msg = NULL;
-	for (int i = 0; i < m_iocpmsg.size(); i++)
+	for (unsigned int i = 0; i < m_iocpmsg.size(); i++)
 	{
 		msg = m_iocpmsg.front();
 
@@ -39,7 +39,7 @@ void GameMessageManager::DestoryMsg()
 		}
 	}
 
-	for (int i = 0; i < m_msg.size(); i++)
+	for (unsigned int i = 0; i < m_msg.size(); i++)
 	{
 		msg = m_msg.front();
 

@@ -3,6 +3,8 @@
 #include "SSocket.h"
 #include "Log.h"
 #include <process.h>
+#include "GameMessage.h"
+
 
 unsigned WINAPI Accept(LPVOID pAcceptOL);
 unsigned WINAPI WorkThread(void* pOL);
@@ -21,7 +23,7 @@ IOCP* IOCP::GetInstance()
 
 
 IOCP::IOCP()
-	:m_cs()
+	:m_cs(), m_ThreadAccept(NULL), m_ThreadWork(NULL)
 {
 }
 
@@ -32,7 +34,7 @@ IOCP::~IOCP()
 }
 
 
-BOOL IOCP::CreateIOCP()
+BOOL IOCP::CreateIOCP(IOCPThread _Accept, IOCPThread _WorkThread)
 {
 	WSADATA             wsaData;
 
@@ -55,8 +57,16 @@ BOOL IOCP::CreateIOCP()
 		return FALSE;
 	}
 
-	CreateIOCPThread();
+	m_ThreadAccept = _Accept;
+	m_ThreadWork = _WorkThread;
 
+	if (CreateIOCPThread() == false)
+	{
+		ERROR_LOG("CreateIOCPThread Error!");
+		//Log::Instance()->WriteLog("Project-socket", "create IOCP handle error");
+		CleanUp();
+		return FALSE;
+	}
 	return true;
 }
 
@@ -95,8 +105,10 @@ void IOCP::CleanUp()
 	WSACleanup();
 }
 
-void IOCP::CreateIOCPThread()
+BOOL IOCP::CreateIOCPThread()
 {
+	if (m_ThreadAccept == NULL || m_ThreadWork == NULL) return false;
+
 	GetSystemInfo(&m_system);
 
 	m_threadcount = (BYTE)m_system.dwNumberOfProcessors * 2 - 1;
@@ -108,22 +120,22 @@ void IOCP::CreateIOCPThread()
 
 	for (DWORD i = 0; i < m_threadcount; i++)
 	{
-		//		CreateThread()
 
 		//m_threads[i] = CreateThread(NULL, 0, WorkThread, this, 0, &threadid);
-		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, WorkThread, this, 0, &threadid);
+		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, m_ThreadWork, this, 0, &threadid);
 		//WorkThread만들자.
 		if (m_threads[i] == NULL)
 		{
 			Log::Instance()->WriteLog("Project-socket", "Thread Create Fail");
 			CleanUp();
-			return;
+			return false;
 		}
 	}
 
-	m_acceptthread = (HANDLE)_beginthreadex(NULL, 0, Accept, this, 0, &threadid);
+	m_acceptthread = (HANDLE)_beginthreadex(NULL, 0, m_ThreadAccept, this, 0, &threadid);
 	SetThreadPriority(m_acceptthread, THREAD_PRIORITY_HIGHEST);
 
+	return true;
 }
 
 BOOL IOCP::RegisterCompletionPort(SOCKET_CONTEXT* lpPerSocketContext)
@@ -189,11 +201,10 @@ BOOL IOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, W
 
 unsigned WINAPI Accept(LPVOID pAcceptOL)
 {
-	//WinSocket listen_socket;
 	SSocket accept_socket;
-	//	SocketTool tool;
 	SOCKET client_socket;
 	SOCKADDR_IN client_addr;
+	SOCKET_CONTEXT socket_context;
 
 	if (accept_socket.CreateWSASocket() == FALSE)
 	{
@@ -203,10 +214,10 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 	}
 
 
-	accept_socket.SetAddr(AF_INET, 14483, INADDR_ANY);
+	accept_socket.SetAddr(AF_INET, SERVER_PORT, INADDR_ANY);
 
 
-	if (!SocketTool::Bind(accept_socket.socket, accept_socket.addr))
+	if (SocketTool::Bind(accept_socket.socket, accept_socket.addr) == INVALID_SOCKET)
 	{
 
 #ifdef _DEBUG
@@ -243,14 +254,14 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		ERROR_LOG("connect faile2");
 	}
 
-	if (SocketTool::Listen(accept_socket.socket, ListenQueue) == FALSE)
+	if (SocketTool::Listen(accept_socket.socket, ListenQueue) == INVALID_SOCKET)
 	{
 		accept_socket.CloseSocket();
 		SOCKET_ERROR_LOG_CODE;
 		return 0;
 	}
 	else
-		printf("Listen Sucess! \n");
+		printf("Listen Sucess! IP : %s / Port : %d \n", SERVER_IP, SERVER_PORT);
 
 
 	//accept 반복
@@ -275,7 +286,21 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		{
 			UserContainer::GetInstance()->Add_CurUser(IOCP::g_userID, puser);
 
-			puser->InitUser(client_socket, client_addr, IOCP::g_userID++);
+			socket_context.m_addr = client_addr;
+			socket_context.m_socket = client_socket;
+			socket_context.m_puser = puser;
+
+			if ( IOCP::GetInstance()->RegisterCompletionPort(&socket_context) == false )
+			{
+				printf("[Accept Thread] : RegisterCompletionPort fail \n");
+			}
+			else
+			{
+				puser->InitUser(client_socket, client_addr, IOCP::g_userID++);
+
+				printf("[Accept Thread] : RegisterCompletionPort Sucess \n");
+				GameMessageManager::Instnace()->SendGameMessage(GM_ACCEPTUSER, 0, 0, NULL);
+			}
 		}
 	}
 }

@@ -1,31 +1,29 @@
 #include "stdafx.h"
 #include "Packet.h"
 
-template<typename T>
-SCircleQueue<T>::SCircleQueue()
-	:m_front(0), m_tail(0), Container<T>()
+
+SCircleQueue::SCircleQueue()
+	:m_front(0), m_tail(0)
 {
-	m_data = new T[MAX_QUEUE_LENGTH];
+	m_data = new char[MAX_QUEUE_LENGTH];
 }
 
-template<typename T>
-SCircleQueue<T>::~SCircleQueue()
+SCircleQueue::~SCircleQueue()
 {
 	SAFE_DELETE_ARR(m_data);
 }
 
-template<typename T>
-bool SCircleQueue<T>::Push(IN T * data, IN short size)
+bool SCircleQueue::Push(IN char * data, IN short size)
 {
 	if (size == 0)
 	{
 		CircleQueueStateToString(ERROR_TEMP_PACKET);
-		return FALSE;
+		return false;
 	}
 	if (size > MAX_QUEUE_LENGTH)
 	{
 		CircleQueueStateToString(ERROR_OVER_PACKETSIZE);
-		return FALSE;
+		return false;
 	}
 
 	if ((m_front + size) > MAX_QUEUE_LENGTH)
@@ -36,34 +34,32 @@ bool SCircleQueue<T>::Push(IN T * data, IN short size)
 	memcpy(&m_data[m_front], data, size);
 	m_front += size;
 
-	return TRUE;
+	return true;
 }
 
 
-template<typename T>
-void SCircleQueue<T>::Pop(OUT T * data)
+void SCircleQueue::Pop(OUT BTZPacket * data)
 {
-	T* packet = NULL;
+	BTZPacket* packet = NULL;
 	int packetsize = 0;
 	int size = m_front - m_tail;
 
-	packet = ((T*)&m_data[m_front]);
+	packet = ((BTZPacket*)&m_data[m_front]);
 	packetsize = packet->packet_size;
 
-	if (packetsize < sizeof(T)) return;
+	if (packetsize < sizeof(BTZPacket)) return;
 	if (size < packetsize) return;
 
 	//	m_tail += packetsize;
 
 	int pre = m_tail;
-	m_tail += packet;
+	m_tail += packetsize;
 
 	data = packet;
 }
 
 //front가 max_queue_length를 넘으려고 할 때, 큐를 초기화
-template<typename T>
-void SCircleQueue<T>::InitQueue()
+void SCircleQueue::InitQueue()
 {
 	int size = m_front - m_tail;
 	if (size >= MAX_QUEUE_LENGTH)
