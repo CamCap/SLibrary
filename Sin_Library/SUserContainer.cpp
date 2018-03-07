@@ -23,7 +23,6 @@ UserContainer::UserContainer()
 		//		m_vecEmptyUser[i] = pUser;
 		m_vecEmptyUser.push_back(pUser);
 	}
-
 }
 
 
@@ -55,9 +54,9 @@ void UserContainer::Push_EmptyUser(SPeer* puser)
 void UserContainer::Add_CurUser(int userid, SPeer* puser)
 {
 	if (puser == NULL)
-		return; \
+		return; 
 
-		CSLOCK(m_cs)
+	CSLOCK(m_cs)
 	{
 		m_mapConnectUser.insert(std::pair<int, SPeer*>(userid, puser));
 	}
@@ -93,10 +92,13 @@ SPeer* UserContainer::Pop_EmptyUser()
 
 void UserContainer::Remove_CurUser(SOCKET sock)
 {
-	MAP_USER::iterator it = m_mapConnectUser.find(sock);
-	if (it != m_mapConnectUser.end())
+	CSLOCK(m_cs)
 	{
-		m_mapConnectUser.erase(it);
+		MAP_USER::iterator it = m_mapConnectUser.find(sock);
+		if (it != m_mapConnectUser.end())
+		{
+			m_mapConnectUser.erase(it);
+		}
 	}
 }
 

@@ -73,13 +73,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\LIB\LIB32\</OutDir>
-    <IntDir>$(SolutionDir)$(Configuration)\Intermeditate32bit\</IntDir>
+    <IntDir>$(SolutionDir)\Intermediate64bit\</IntDir>
     <TargetName>$(ProjectName)_32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\LIB\LIB64\</OutDir>
-    <IntDir>$(SolutionDir)$(Configuration)\Intermediate64bit\</IntDir>
+    <IntDir>$(SolutionDir)\Intermediate64bit\</IntDir>
     <TargetName>$(ProjectName)_64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -156,6 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Container.h" />
     <ClInclude Include="CriticalSection.h" />
     <ClInclude Include="GameMessage.h" />
     <ClInclude Include="header.h" />
@@ -168,6 +169,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Container.cpp" />
     <ClCompile Include="GameMessage.cpp" />
     <ClCompile Include="IOCP.cpp" />
     <ClCompile Include="Log.cpp" />

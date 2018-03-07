@@ -1,9 +1,0 @@
-﻿  ssocket.cpp
-c:\users\신우철\source\repos\slibrary\sin_library\ssocket.cpp(251): warning C4060: switch문에 'case' 또는 'default' 레이블이 없습니다.
-  SUserContainer.cpp
-  IOCP.cpp
-  코드를 생성하고 있습니다...
-  컴파일하고 있습니다...
-  GameMessage.cpp
-  코드를 생성하고 있습니다...
-  Sin_Library.vcxproj -> C:\Users\신우철\Source\Repos\SLibrary\\LIB\LIB32\Sin_Library_32.lib

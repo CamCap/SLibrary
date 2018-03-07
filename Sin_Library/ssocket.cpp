@@ -205,7 +205,7 @@ void SPeer::ReleaseSocket()
 	m_session.CloseSocket();
 }
 
-void SPeer::InitUser(SOCKET socket, SOCKADDR_IN addr, int userid)
+void SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
 {
 	m_session.InitSession(socket, addr, recv_buffer, USER_BUFFER_SIZE);
 	m_id = userid;

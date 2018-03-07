@@ -118,7 +118,7 @@ public:
 	void Send(BTZPacket* packet);
 	void CheckSendPacket(); // GQCS에서 Send 완료 되면 호출할 것
 	void ReleaseSocket();
-	void InitUser(SOCKET socket, SOCKADDR_IN addr, int userid);
+	void InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid);
 
 	BOOL RecvPacket(int size);
 protected:

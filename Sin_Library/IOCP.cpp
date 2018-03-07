@@ -296,7 +296,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 			}
 			else
 			{
-				puser->InitUser(client_socket, client_addr, IOCP::g_userID++);
+				puser->InitPeer(client_socket, client_addr, IOCP::g_userID++);
 
 				printf("[Accept Thread] : RegisterCompletionPort Sucess \n");
 				GameMessageManager::Instnace()->SendGameMessage(GM_ACCEPTUSER, 0, 0, NULL);
