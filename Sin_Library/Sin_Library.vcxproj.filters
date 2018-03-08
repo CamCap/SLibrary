@@ -39,13 +39,13 @@
     <ClInclude Include="ssocket.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="SUserContainer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="GameMessage.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Container.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SUserContainer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -69,9 +69,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SUserContainer.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Container.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

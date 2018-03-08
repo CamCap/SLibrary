@@ -280,6 +280,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		}
 
 		//Aceept를 성공한 후에...
+//		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
 		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
 
 		if (puser != NULL)

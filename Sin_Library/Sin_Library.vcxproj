@@ -169,7 +169,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Container.cpp" />
     <ClCompile Include="GameMessage.cpp" />
     <ClCompile Include="IOCP.cpp" />
     <ClCompile Include="Log.cpp" />
