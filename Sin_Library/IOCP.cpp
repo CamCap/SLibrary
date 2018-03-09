@@ -96,6 +96,10 @@ void IOCP::CleanUp()
 		m_threads[i] = INVALID_HANDLE_VALUE;
 	}
 
+	if (m_acceptthread != INVALID_HANDLE_VALUE)
+		CloseHandle(m_acceptthread);
+	m_acceptthread = INVALID_HANDLE_VALUE;
+
 	if (m_handle)
 	{
 		CloseHandle(m_handle);
@@ -281,11 +285,13 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 
 		//Aceept를 성공한 후에...
 //		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
-		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
+		UserContainer* container = UserContainer::GetInstance();
+		
+		SPeer* puser = container->Pop_EmptyUser();
 
 		if (puser != NULL)
 		{
-			UserContainer::GetInstance()->Add_CurUser(IOCP::g_userID, puser);
+			container->Add_CurUser(IOCP::g_userID, puser);
 
 			socket_context.m_addr = client_addr;
 			socket_context.m_socket = client_socket;

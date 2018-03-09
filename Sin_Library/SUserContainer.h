@@ -11,20 +11,12 @@ struct SOCKET_CONTEXT;
 class UserContainer
 	:public Container<SPeer>
 {
-private:
-
-	typedef void (Container<SPeer>::*remove_curUser)(int);
-	typedef SPeer* (Container<SPeer>::*pop_emptyUser)();
-	typedef void (Container<SPeer>::*add_curUser)(int, SPeer*);
-	typedef void (Container<SPeer>::*push_emptyUser)(SPeer*);
-
 public:
-
-	remove_curUser Remove_curUser = MapPopBack;
-	pop_emptyUser Pop_EmptyUser = VecPopBack;
-	add_curUser Add_CurUser = MapPushBack;
-	push_emptyUser Push_EmptyUser = VecPushBack;
-
+	void Remove_CurUser(int key) { Container<SPeer>::MapPopBack(key); }
+	SPeer* Pop_EmptyUser() { return Container<SPeer>::VecPopBack(); }
+	void Add_CurUser(int key, SPeer* value) { Container<SPeer>::MapPushBack(key, value); }
+	void Push_EmptyUser(SPeer* value) { Container<SPeer>::VecPushBack(value); }
+		
 public:
 	static UserContainer* GetInstance();
 

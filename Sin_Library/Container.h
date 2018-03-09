@@ -11,11 +11,11 @@ protected:
 	typedef std::vector<T*> VEC_CONTANINER;
 
 public:
-	void MapPopBack(int key);
-	T* VecPopBack();
+	virtual void MapPopBack(int key);
+	virtual T* VecPopBack(void);
 
-	void MapPushBack(int id, T* value);
-	void VecPushBack(T* value);
+	virtual void MapPushBack(int id, T* value);
+	virtual void VecPushBack(T* value);
 
 
 public:
@@ -44,7 +44,7 @@ void Container<T>::MapPopBack(int key)
 {
 	CSLOCK(m_cs)
 	{
-		MAP_CONTANINER::iterator it = m_mapCon.fine(key);
+		MAP_CONTANINER::iterator it = m_mapCon.find(key);
 		if (it != m_mapCon.end())
 		{
 			m_mapCon.erase(it);
@@ -77,12 +77,12 @@ T * Container<T>::VecPopBack()
 template<typename T>
 void Container<T>::MapPushBack(int id, T * value)
 {
-	if (puser == NULL)
+	if (value == NULL)
 		return;
 
 	CSLOCK(m_cs)
 	{
-		m_mapCon.insert(std::pair<int, SPeer*>(userid, puser));
+		m_mapCon.insert(std::pair<int, T*>(id, value));
 	}
 
 	return;
