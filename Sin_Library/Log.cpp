@@ -52,7 +52,6 @@ bool File::FileWrite(string write)
 //미구현
 bool File::FileRead(string read)
 {
-	//std::cout << "�̱����Դϴ�. �����ڰ� ���� �ʿ䰡 ������, �׳� �־ �޼����Դϴ�." << std::endl;
 
 	return true;
 }

@@ -10,7 +10,7 @@ protected:
 	typedef std::map<int, T*> MAP_CONTANINER;
 	typedef std::vector<T*> VEC_CONTANINER;
 
-public:
+protected:
 	virtual void MapPopBack(int key);
 	virtual T* VecPopBack(void);
 
