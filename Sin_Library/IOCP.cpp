@@ -7,7 +7,9 @@
 
 
 unsigned WINAPI Accept(LPVOID pAcceptOL);
-unsigned WINAPI WorkThread(void* pOL);
+unsigned WINAPI WorkThread(LPVOID pOL);
+void AcceptRoutinue(SOCKET, SOCKADDR_IN);
+void WorkRoutinue();
 
 IOCP* IOCP::m_instance = NULL;
 DWORD IOCP::g_userID = USER_ID_INDEX;
@@ -22,9 +24,12 @@ IOCP* IOCP::GetInstance()
 }
 
 
+
 IOCP::IOCP()
 	:m_cs(), m_ThreadAccept(NULL), m_ThreadWork(NULL)
 {
+	m_ThreadAccept = AcceptRoutinue;
+	m_ThreadWork = WorkRoutinue;
 }
 
 
@@ -34,7 +39,7 @@ IOCP::~IOCP()
 }
 
 
-BOOL IOCP::CreateIOCP(IOCPThread _Accept, IOCPThread _WorkThread)
+BOOL IOCP::CreateIOCP(IOCPAccept _Accept, IOCPWork _WorkThread)
 {
 	WSADATA             wsaData;
 
@@ -111,7 +116,7 @@ void IOCP::CleanUp()
 
 BOOL IOCP::CreateIOCPThread()
 {
-	if (m_ThreadAccept == NULL || m_ThreadWork == NULL) return false;
+//	if (m_ThreadAccept == NULL || m_ThreadWork == NULL) return false;
 
 	GetSystemInfo(&m_system);
 
@@ -126,7 +131,7 @@ BOOL IOCP::CreateIOCPThread()
 	{
 
 		//m_threads[i] = CreateThread(NULL, 0, WorkThread, this, 0, &threadid);
-		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, m_ThreadWork, this, 0, &threadid);
+		m_threads[i] = (HANDLE)_beginthreadex(m_ThreadWork, 0, WorkThread, this, 0, &threadid);
 		//WorkThread만들자.
 		if (m_threads[i] == NULL)
 		{
@@ -136,7 +141,7 @@ BOOL IOCP::CreateIOCPThread()
 		}
 	}
 
-	m_acceptthread = (HANDLE)_beginthreadex(NULL, 0, m_ThreadAccept, this, 0, &threadid);
+	m_acceptthread = (HANDLE)_beginthreadex(m_acceptthread, 0, Accept, this, 0, &threadid);
 	SetThreadPriority(m_acceptthread, THREAD_PRIORITY_HIGHEST);
 
 	return true;
@@ -271,10 +276,6 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 	//accept 반복
 	while (1)
 	{
-		//		if (tool.Accept(&listen_socket) == INVALID_SOCKET)
-
-		//SCOPE_EXIT(printf("accept sucess \n"););
-
 		client_socket = SocketTool::Accept(accept_socket.socket, client_addr);
 
 		if (client_socket == INVALID_SOCKET)
@@ -285,35 +286,14 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 
 		//Aceept를 성공한 후에...
 //		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
-		UserContainer* container = UserContainer::GetInstance();
-		
-		SPeer* puser = container->Pop_EmptyUser();
 
-		if (puser != NULL)
-		{
-			container->Add_CurUser(IOCP::g_userID, puser);
-
-			socket_context.m_addr = client_addr;
-			socket_context.m_socket = client_socket;
-			socket_context.m_puser = puser;
-
-			if ( IOCP::GetInstance()->RegisterCompletionPort(&socket_context) == false )
-			{
-				printf("[Accept Thread] : RegisterCompletionPort fail \n");
-			}
-			else
-			{
-				puser->InitPeer(client_socket, client_addr, IOCP::g_userID++);
-
-				printf("[Accept Thread] : RegisterCompletionPort Sucess \n");
-				GameMessageManager::Instnace()->SendGameMessage(GM_ACCEPTUSER, 0, 0, NULL);
-			}
-		}
+		IOCPAccept routinue = (IOCPAccept)pAcceptOL;
+		routinue(client_socket, client_addr);
 	}
 }
 
 
-unsigned WINAPI WorkThread(void* pOL)
+unsigned WINAPI WorkThread(LPVOID pOL)
 {
 
 	//IOCP* iocp = ;
@@ -374,4 +354,39 @@ unsigned WINAPI WorkThread(void* pOL)
 	}
 
 	return 0;
+}
+
+void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
+{
+	SOCKET_CONTEXT socket_context;
+	UserContainer* container = UserContainer::GetInstance();
+
+	SPeer* puser = container->Pop_EmptyUser();
+
+	if (puser != NULL)
+	{
+		container->Add_CurUser(IOCP::g_userID, puser);
+
+		socket_context.m_addr = client_addr;
+		socket_context.m_socket = client_socket;
+		socket_context.m_puser = puser;
+
+		if (IOCP::GetInstance()->RegisterCompletionPort(&socket_context) == false)
+		{
+			printf("[Accept Thread] : RegisterCompletionPort fail \n");
+		}
+		else
+		{
+			puser->InitPeer(client_socket, client_addr, IOCP::g_userID++);
+
+			printf("[Accept Thread] : RegisterCompletionPort Sucess \n");
+			GameMessageManager::Instnace()->SendGameMessage(GM_ACCEPTUSER, 0, 0, NULL);
+		}
+	}
+
+	return;
+}
+
+void WorkRoutinue()
+{
 }

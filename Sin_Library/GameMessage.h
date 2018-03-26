@@ -25,7 +25,8 @@ public:
 	static GameMessageManager* Instnace();
 
 	GameMSG* GetGameMessage() { return PopMsg(); }
-	void TempMsgPush(GameMSG* msg) { m_iocpmsg.push_back(msg); }
+	void PushIocpMsg(GameMSG* msg);
+	void PushMsg(GameMSG* msg);
 
 	static DWORD WINAPI GameMsgLoop(LPVOID pArg);
 
@@ -35,10 +36,8 @@ private:
 	void SetEvent();
 	void ResetEvent();
 
-	void PushIocpMsg(GameMSG* msg);
+	//void PushIocpMsg(GameMSG* msg);
 	GameMSG* PopIocpMsg();
-
-	void PushMsg(GameMSG* msg);
 	GameMSG* PopMsg();
 
 

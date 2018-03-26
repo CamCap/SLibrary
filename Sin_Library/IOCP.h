@@ -14,20 +14,23 @@ struct SOCKET_CONTEXT
 	SPeer* m_puser;
 };
 
-typedef unsigned int(__stdcall *IOCPThread)(void*);
-
 unsigned WINAPI Accept(LPVOID pAcceptOL);
-unsigned WINAPI WorkThread(void* pOL);
+unsigned WINAPI WorkThread(LPVOID pOL);
+
+void AcceptRoutinue(SOCKET, SOCKADDR_IN);
+void WorkRoutinue();
 
 //라이브러리니까 싱글톤 패턴으로 구현할 필요가 없지 않을까??
 //상속해서 쓰는게 좋을 것같긴한데..
+
+typedef void(*IOCPAccept)(SOCKET, SOCKADDR_IN);
+typedef void(*IOCPWork)(void);
 
 
 class IOCP
 {
 public:
-	
-	BOOL CreateIOCP(IOCPThread _Accept = Accept, IOCPThread _WorkThread = WorkThread); //IOCP를 생성하자
+	BOOL CreateIOCP(IOCPAccept _Accept = AcceptRoutinue, IOCPWork _WorkThread = WorkRoutinue); //IOCP를 생성하자
 	void CleanUp();
 
 
@@ -48,20 +51,23 @@ private:
 public:
 	static DWORD g_userID;
 
+protected:
+
+	SCriticalSection m_cs;
+
+
 private:
 
 	HANDLE m_handle; // iocp 핸들
 	SYSTEM_INFO m_system;
 
-	SCriticalSection m_cs;
-
 	HANDLE m_threads[MAX_WORKER_THREAD];
 	HANDLE m_acceptthread;
-	BYTE m_threadcount;
+	short m_threadcount;
 
 	static IOCP* m_instance;
 
-	IOCPThread m_ThreadAccept;
-	IOCPThread m_ThreadWork;
+	IOCPAccept m_ThreadAccept;
+	IOCPWork m_ThreadWork;
 };
 

@@ -142,7 +142,6 @@ GameMSG * GameMessageManager::PopMsg()
 
 	while (1)
 	{
-
 		if (m_msg.size() > 0)
 			break;
 		else
@@ -171,13 +170,13 @@ DWORD WINAPI GameMessageManager::GameMsgLoop(LPVOID pArg)
 
 			if (msg->msg == GM_QUIT)
 			{
-				GameMessageManager::Instnace()->TempMsgPush(msg);
+				GameMessageManager::Instnace()->PushIocpMsg(msg);
 				break;
 			}
 
 			GameMessageProcedure(msg->msg, msg->wParam, msg->lParam, msg->packet);
 
-			GameMessageManager::Instnace()->TempMsgPush(msg);
+			GameMessageManager::Instnace()->PushIocpMsg(msg);
 		}
 	}
 
