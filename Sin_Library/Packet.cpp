@@ -83,7 +83,13 @@ void SCircleQueue::InitQueue()
 SPacketContainer::SPacketContainer()
 	: m_VecSize(BTZ_PACKET_LENGTH)
 {
+	BTZPacket* packet = NULL;
 
+	for (int i = 0; i < m_VecSize; i++)
+	{
+		packet = new BTZPacket;
+		m_VecPacket.push_back(packet);
+	}
 }
 
 SPacketContainer::SPacketContainer(int size)

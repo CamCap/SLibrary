@@ -26,10 +26,8 @@ IOCP* IOCP::GetInstance()
 
 
 IOCP::IOCP()
-	:m_cs(), m_ThreadAccept(NULL), m_ThreadWork(NULL)
+	:m_cs(), m_ThreadAccept(AcceptRoutinue), m_ThreadWork(WorkRoutinue)
 {
-	m_ThreadAccept = AcceptRoutinue;
-	m_ThreadWork = WorkRoutinue;
 }
 
 
@@ -131,7 +129,7 @@ BOOL IOCP::CreateIOCPThread()
 	{
 
 		//m_threads[i] = CreateThread(NULL, 0, WorkThread, this, 0, &threadid);
-		m_threads[i] = (HANDLE)_beginthreadex(m_ThreadWork, 0, WorkThread, this, 0, &threadid);
+		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, WorkThread, this, 0, &threadid);
 		//WorkThread¸¸µéÀÚ.
 		if (m_threads[i] == NULL)
 		{
@@ -141,7 +139,7 @@ BOOL IOCP::CreateIOCPThread()
 		}
 	}
 
-	m_acceptthread = (HANDLE)_beginthreadex(m_acceptthread, 0, Accept, this, 0, &threadid);
+	m_acceptthread = (HANDLE)_beginthreadex(NULL, 0, Accept, m_ThreadAccept, 0, &threadid);
 	SetThreadPriority(m_acceptthread, THREAD_PRIORITY_HIGHEST);
 
 	return true;
@@ -380,7 +378,7 @@ void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
 			puser->InitPeer(client_socket, client_addr, IOCP::g_userID++);
 
 			printf("[Accept Thread] : RegisterCompletionPort Sucess \n");
-			GameMessageManager::Instnace()->SendGameMessage(GM_ACCEPTUSER, 0, 0, NULL);
+			GameMessageManager::Instnace()->SendGameMessage(GM_ACCEPTUPEER, 0, 0, NULL);
 		}
 	}
 

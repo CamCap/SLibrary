@@ -150,6 +150,7 @@ SPeer::~SPeer()
 void SPeer::Send(BTZPacket* packet)
 {
 	BTZPacket* sendpacket = NULL;
+	
 	m_vecStandPacket.Pop(sendpacket);
 
 	if (sendpacket == NULL)
@@ -157,6 +158,7 @@ void SPeer::Send(BTZPacket* packet)
 		SUSERSTATEToString(ERROR_SENDPACKET_NULL);
 		return;
 	}
+
 	memcpy(sendpacket, packet, sizeof(*packet));
 
 	m_vecSendPacket.Push(sendpacket);

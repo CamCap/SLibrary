@@ -198,7 +198,7 @@ void GameMessageProcedure(DWORD msg, DWORD wParam, DWORD lParam, const char * pP
 
 	switch (msg)
 	{
-	case GM_ACCEPTUSER:
+	case GM_ACCEPTUPEER:
 		printf("Accept User \n");
 		break;
 	case GM_ERROR:

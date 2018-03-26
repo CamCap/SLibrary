@@ -146,7 +146,7 @@ ScopeExit<T> MakeScopeExit(T t)
 
 //---------------------------- 게임 메세지 ------------------//
 #define GM_ERROR                WM_USER + 1 //에러 메세지를 출력.
-#define GM_ACCEPTUSER           WM_USER + 2 //새로운 유저가 접속했을 경우.
+#define GM_ACCEPTUPEER           WM_USER + 2 //새로운 유저가 접속했을 경우.
 #define GM_DISCONNECTUSER       WM_USER + 3 //유저가 접속했을 종료했을 경우.
 #define GM_PKTRECEIVE           WM_USER + 4 //클라이언트로 부터 패킷이 왔을 경우.
 #define GM_QUIT					WM_USER + 5 //클라이언트로 부터 패킷이 왔을 경우.
