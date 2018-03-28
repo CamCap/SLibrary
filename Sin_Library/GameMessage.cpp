@@ -91,7 +91,8 @@ void GameMessageManager::PushIocpMsg(GameMSG * msg)
 
 	CSLOCK(m_cs)
 	{
-		m_msg.push_back(msg);
+//		this->m_
+		this->m_iocpmsg.push_back(msg);
 	}
 }
 
@@ -191,25 +192,3 @@ bool InitDataBase()
 {
 	return 0;
 }
-
-void GameMessageProcedure(DWORD msg, DWORD wParam, DWORD lParam, const char * pPacket)
-{
-	switch (msg)
-	{
-	case GM_ACCEPTUPEER:
-		break;
-	case GM_ERROR:
-		break;
-	case GM_DISCONNECTUSER:
-		IOCP::GetInstance()->PostCompletionStatus(wParam, 0, (OVERLAPPED*)lParam);
-		break;
-	case GM_PKTRECEIVE:
-		break;
-	case GM_TIMER:
-		break;
-	default:
-		break;
-	}
-}
-
-

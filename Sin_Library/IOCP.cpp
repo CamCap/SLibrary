@@ -211,7 +211,6 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 	SSocket accept_socket;
 	SOCKET client_socket;
 	SOCKADDR_IN client_addr;
-	SOCKET_CONTEXT socket_context;
 
 	if (accept_socket.CreateWSASocket() == FALSE)
 	{
@@ -293,8 +292,6 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 
 unsigned WINAPI WorkThread(LPVOID pOL)
 {
-
-	//IOCP* iocp = ;
 	DWORD DwNumberBytes = 0;
 	SOCKET_CONTEXT* pCompletionKey = NULL;
 	IO_OVERLAPPED* pOverlapped = NULL;
@@ -320,7 +317,7 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 			if (pOverlapped != NULL)
 			{
 				UserContainer::GetInstance()->DisConnect(pCompletionKey); 
-				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey->m_puser, (DWORD)pOverlapped, NULL);
+				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			}
 
 			continue;
@@ -333,7 +330,7 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		if (DwNumberBytes == 0)
 		{
 			UserContainer::GetInstance()->DisConnect(pCompletionKey); 
-			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey->m_puser, (DWORD)pOverlapped, NULL);
+			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			continue;
 		}
 

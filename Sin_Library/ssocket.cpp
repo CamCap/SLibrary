@@ -73,7 +73,7 @@ void SSession::InitSession(SOCKET socket, SOCKADDR_IN addr, char* recvbuffer, in
 
 void SSession::CloseSocket()
 {
-	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
+//	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
 
 	m_socket.CloseSocket();
 
