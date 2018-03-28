@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include "CriticalSection.h"
+#include "header.h"
 
 #define MAX_GAME_MSG_SIZE 1024
 

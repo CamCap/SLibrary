@@ -194,22 +194,18 @@ bool InitDataBase()
 
 void GameMessageProcedure(DWORD msg, DWORD wParam, DWORD lParam, const char * pPacket)
 {
-	//BTZPacket* packet = (BTZPacket*)pPacket;
-
 	switch (msg)
 	{
 	case GM_ACCEPTUPEER:
-		printf("Accept User \n");
 		break;
 	case GM_ERROR:
-		printf("Error, Look Log! \n");
 		break;
 	case GM_DISCONNECTUSER:
 		IOCP::GetInstance()->PostCompletionStatus(wParam, 0, (OVERLAPPED*)lParam);
-		printf("DisConnect User \n");
 		break;
 	case GM_PKTRECEIVE:
-		printf("Recv Packet \n");
+		break;
+	case GM_TIMER:
 		break;
 	default:
 		break;

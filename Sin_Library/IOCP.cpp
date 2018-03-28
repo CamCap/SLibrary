@@ -319,7 +319,8 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		{
 			if (pOverlapped != NULL)
 			{
-				UserContainer::GetInstance()->DisConnect(pCompletionKey);
+				UserContainer::GetInstance()->DisConnect(pCompletionKey); 
+				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey->m_puser, (DWORD)pOverlapped, NULL);
 			}
 
 			continue;
@@ -331,7 +332,8 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		//클라가 연결을 끊음
 		if (DwNumberBytes == 0)
 		{
-			UserContainer::GetInstance()->DisConnect(pCompletionKey);
+			UserContainer::GetInstance()->DisConnect(pCompletionKey); 
+			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey->m_puser, (DWORD)pOverlapped, NULL);
 			continue;
 		}
 

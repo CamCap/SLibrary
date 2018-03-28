@@ -150,4 +150,5 @@ ScopeExit<T> MakeScopeExit(T t)
 #define GM_DISCONNECTUSER       WM_USER + 3 //유저가 접속했을 종료했을 경우.
 #define GM_PKTRECEIVE           WM_USER + 4 //클라이언트로 부터 패킷이 왔을 경우.
 #define GM_QUIT					WM_USER + 5 //클라이언트로 부터 패킷이 왔을 경우.
+#define GM_TIMER				WM_USER + 6
 
