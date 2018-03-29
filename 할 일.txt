@@ -1,1 +1,0 @@
-GameMessageProcedure를 사용자가 정의가능하게 만들어줄까?

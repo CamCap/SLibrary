@@ -76,6 +76,23 @@ void SSession::CloseSocket()
 {
 //	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
 
+//소켓 강제 종료
+///다음의 기능은 http://egloos.zum.com/mirine35/v/5057014 참조
+///우아한 종료로 TIMEOUT이 발생할 수 있음. 시나리오는 위를 참조.
+///이 TIMEOUT이 무한 발생(실제로는 240초까지만)하면, 소켓을 사용할 수 없다.
+///이를 위해 closesocket이 대기하는 시간을 조절
+
+	LINGER LingerStruct;
+	LingerStruct.l_onoff = 1;
+	LingerStruct.l_linger = 0;
+
+	if (setsockopt(m_socket.socket, SOL_SOCKET, SO_LINGER, (char*)&LingerStruct, sizeof(LingerStruct) == SOCKET_ERROR))
+	{
+		//return;
+		ERROR_LOG("Set Socket LINGER Error ");
+	}
+
+
 	m_socket.CloseSocket();
 
 	memset(&m_recvOL, 0, sizeof(IO_OVERLAPPED));
@@ -140,12 +157,10 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 SPeer::SPeer()
 	:m_vecSendPacket(0), m_vecStandPacket(), m_session()
 {
-	m_socketcontext = new SOCKET_CONTEXT;
 }
 
 SPeer::~SPeer()
 {
-	SAFE_DELETE(m_socketcontext);
 	m_session.CloseSocket();
 }
 
@@ -214,16 +229,6 @@ bool SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
 {
 	m_session.InitSession(socket, addr, recv_buffer, USER_BUFFER_SIZE);
 	m_id = userid;
-
-	m_socketcontext->m_addr = addr;
-	m_socketcontext->m_puser = (SPeer*)this;
-	m_socketcontext->m_socket = socket;
-
-	if (IOCP::GetInstance()->RegisterCompletionPort(m_socketcontext) == false)
-	{
-		return false;
-	}
-
 	Recv();
 
 	return true;

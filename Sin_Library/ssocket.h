@@ -101,8 +101,6 @@ private:
 
 #define USER_BUFFER_SIZE 1024
 
-struct SOCKET_CONTEXT;
-
 class SPeer
 {
 public:
@@ -138,7 +136,6 @@ protected:
 	SPacketContainer m_vecSendPacket; // 보내는 패킷 벡터
 	SPacketContainer m_vecStandPacket; // 사용대기중인 패킷 벡터
 
-	SOCKET_CONTEXT* m_socketcontext;
 
 	SCriticalSection m_cs;
 

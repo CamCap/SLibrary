@@ -9,7 +9,7 @@
 unsigned WINAPI Accept(LPVOID pAcceptOL);
 unsigned WINAPI WorkThread(LPVOID pOL);
 void AcceptRoutinue(SOCKET, SOCKADDR_IN);
-void WorkRoutinue(SOCKET_CONTEXT*, IO_OVERLAPPED*, int);
+void WorkRoutinue(SPeer*, IO_OVERLAPPED*, int);
 
 IOCP* IOCP::m_instance = NULL;
 DWORD IOCP::g_userID = USER_ID_INDEX;
@@ -145,18 +145,17 @@ BOOL IOCP::CreateIOCPThread()
 	return true;
 }
 
-BOOL IOCP::RegisterCompletionPort(SOCKET_CONTEXT* lpPerSocketContext)
+BOOL IOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
 {
-	if (lpPerSocketContext == NULL)
+	if ((context == NULL) || (socket == INVALID_SOCKET))
 		return false;
 
-
-	HANDLE handle = (HANDLE)lpPerSocketContext->m_socket;
+	HANDLE handle = (HANDLE)socket;
 
 	CSLOCK(m_cs)
 	{
 		// 할당된 구조체와 소켓을 IOCP와 연결한다. 
-		if (!CreateIoCompletionPort(handle, m_handle, (DWORD)lpPerSocketContext, 0))
+		if (!CreateIoCompletionPort(handle, m_handle, (DWORD)context, 0))
 		{
 #ifdef _DEBUG
 			char buff[100];
@@ -293,7 +292,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 unsigned WINAPI WorkThread(LPVOID pOL)
 {
 	DWORD DwNumberBytes = 0;
-	SOCKET_CONTEXT* pCompletionKey = NULL;
+	SPeer* pCompletionKey = NULL;
 	IO_OVERLAPPED* pOverlapped = NULL;
 	BOOL result = FALSE;
 	//
@@ -324,7 +323,7 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		}
 
 		//이미 연결이 끊김
-		if ((pCompletionKey == NULL) || (pCompletionKey->m_socket == INVALID_SOCKET) || (pCompletionKey->m_puser == NULL)) continue;
+		if ((pCompletionKey == NULL)) continue;
 
 		//클라가 연결을 끊음
 		if (DwNumberBytes == 0)
@@ -344,7 +343,6 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 
 void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
 {
-	SOCKET_CONTEXT socket_context;
 	SPeerContainer<>* container = SPeerContainer<>::GetInstance();
 
 	SPeer* puser = container->Pop_EmptyPeer();
@@ -353,11 +351,7 @@ void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
 	{
 		container->Add_CurPeer(IOCP::g_userID, puser);
 
-		socket_context.m_addr = client_addr;
-		socket_context.m_socket = client_socket;
-		socket_context.m_puser = puser;
-
-		if (IOCP::GetInstance()->RegisterCompletionPort(&socket_context) == false)
+		if (IOCP::GetInstance()->RegisterCompletionPort(client_socket, puser) == false)
 		{
 			printf("[Accept Thread] : RegisterCompletionPort fail \n");
 		}
@@ -373,17 +367,19 @@ void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
 	return;
 }
 
-void WorkRoutinue(SOCKET_CONTEXT* pCompletionKey, IO_OVERLAPPED* pOverlapped, int DwNumberBytes)
+void WorkRoutinue(SPeer* pCompletionKey, IO_OVERLAPPED* pOverlapped, int DwNumberBytes)
 {
 	if (pOverlapped->io_type == IO_RECV)
 	{
-		//리시브 패킷 처리 함수
-		pCompletionKey->m_puser->RecvPacket(DwNumberBytes);
+//		pCompletionKey->m_puser->RecvPacket(DwNumberBytes);
+		pCompletionKey->RecvPacket(DwNumberBytes);
+		
 	}
 	else if (pOverlapped->io_type == IO_SENDING)
 	{
 		//송신 처리 함수
-		pCompletionKey->m_puser->CheckSendPacket();
+//		pCompletionKey->m_puser->CheckSendPacket();
+		pCompletionKey->CheckSendPacket();
 	}
 	else // IO_NONE 혹은 에러
 	{
