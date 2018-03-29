@@ -6,9 +6,9 @@
 template <typename T>
 class Container
 {
-protected:
-	typedef std::map<int, T*> MAP_CONTANINER;
-	typedef std::vector<T*> VEC_CONTANINER;
+public:
+	using MAP_CONTANINER  = std::map<int, T*>;
+	using VEC_CONTANINER = std::vector<T*>;
 
 protected:
 	virtual void MapPopBack(int key);

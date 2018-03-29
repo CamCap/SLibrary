@@ -8,8 +8,8 @@
 struct GameMSG
 {
 	DWORD msg;
-	DWORD wParam;
-	DWORD lParam;
+	ULONG64 wParam;
+	ULONG64 lParam;
 	char packet[MAX_GAME_MSG_SIZE];
 };
 
@@ -21,7 +21,7 @@ public:
 	GameMessageManager();
 	~GameMessageManager();
 
-	void SendGameMessage(DWORD msg, DWORD wParam, DWORD lParam, char* packet);
+	void SendGameMessage(DWORD msg, ULONG64 wParam, ULONG64 lParam, char* packet);
 
 	static GameMessageManager* Instnace();
 

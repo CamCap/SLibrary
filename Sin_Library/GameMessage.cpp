@@ -52,7 +52,7 @@ void GameMessageManager::DestoryMsg()
 }
 
 
-void GameMessageManager::SendGameMessage(DWORD msg, DWORD wParam, DWORD lParam, char * packet)
+void GameMessageManager::SendGameMessage(DWORD msg, ULONG64 wParam, ULONG64 lParam, char * packet)
 {
 	GameMSG* pmsg = PopIocpMsg();
 

@@ -101,6 +101,8 @@ private:
 
 #define USER_BUFFER_SIZE 1024
 
+struct SOCKET_CONTEXT;
+
 class SPeer
 {
 public:
@@ -118,9 +120,11 @@ public:
 	void Send(BTZPacket* packet);
 	void CheckSendPacket(); // GQCS에서 Send 완료 되면 호출할 것
 	void ReleaseSocket();
-	void InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid);
+	bool InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid);
 
 	BOOL RecvPacket(int size);
+
+	int GetId() { return m_id; }
 protected:
 	void ErrorHandle(const char* function);
 	virtual void PacketProcess(BTZPacket* packet);
@@ -133,6 +137,8 @@ protected:
 
 	SPacketContainer m_vecSendPacket; // 보내는 패킷 벡터
 	SPacketContainer m_vecStandPacket; // 사용대기중인 패킷 벡터
+
+	SOCKET_CONTEXT* m_socketcontext;
 
 	SCriticalSection m_cs;
 

@@ -3,6 +3,7 @@
 #include <cstdio>
 #include "Log.h"
 #include "GameMessage.h"
+#include "IOCP.h"
 
 SSocket::SSocket()
 {
@@ -139,10 +140,12 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 SPeer::SPeer()
 	:m_vecSendPacket(0), m_vecStandPacket(), m_session()
 {
+	m_socketcontext = new SOCKET_CONTEXT;
 }
 
 SPeer::~SPeer()
 {
+	SAFE_DELETE(m_socketcontext);
 	m_session.CloseSocket();
 }
 
@@ -207,11 +210,23 @@ void SPeer::ReleaseSocket()
 	m_session.CloseSocket();
 }
 
-void SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
+bool SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
 {
 	m_session.InitSession(socket, addr, recv_buffer, USER_BUFFER_SIZE);
 	m_id = userid;
+
+	m_socketcontext->m_addr = addr;
+	m_socketcontext->m_puser = (SPeer*)this;
+	m_socketcontext->m_socket = socket;
+
+	if (IOCP::GetInstance()->RegisterCompletionPort(m_socketcontext) == false)
+	{
+		return false;
+	}
+
 	Recv();
+
+	return true;
 }
 
 BOOL SPeer::RecvPacket(int size)
@@ -233,7 +248,7 @@ BOOL SPeer::RecvPacket(int size)
 
 			if (packet == NULL) break;
 
-			GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
+			GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (ULONG64)this, 0, (char*)packet);
 			PacketProcess(packet);
 		}
 	}
@@ -245,12 +260,6 @@ BOOL SPeer::RecvPacket(int size)
 
 void SPeer::PacketProcess(BTZPacket * packet)
 {
-	//	SE SESSIONSTATEToString(SEND_COMPLETE);
-	SSession::SESSIONSTATEToString(SSession::RECV_COMPLETE);
-	switch (packet->packet_id)
-	{
-
-	}
 }
 
 

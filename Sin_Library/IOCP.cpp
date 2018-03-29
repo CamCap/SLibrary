@@ -9,7 +9,7 @@
 unsigned WINAPI Accept(LPVOID pAcceptOL);
 unsigned WINAPI WorkThread(LPVOID pOL);
 void AcceptRoutinue(SOCKET, SOCKADDR_IN);
-void WorkRoutinue();
+void WorkRoutinue(SOCKET_CONTEXT*, IO_OVERLAPPED*, int);
 
 IOCP* IOCP::m_instance = NULL;
 DWORD IOCP::g_userID = USER_ID_INDEX;
@@ -125,11 +125,11 @@ BOOL IOCP::CreateIOCPThread()
 	unsigned int threadid = 0;
 
 
-	for (DWORD i = 0; i < m_threadcount; i++)
+	for (unsigned int i = 0; i < m_threadcount; i++)
 	{
 
 		//m_threads[i] = CreateThread(NULL, 0, WorkThread, this, 0, &threadid);
-		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, WorkThread, this, 0, &threadid);
+		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, WorkThread, m_ThreadWork, 0, &threadid);
 		//WorkThread만들자.
 		if (m_threads[i] == NULL)
 		{
@@ -302,7 +302,6 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 	{
 		result = IOCP::GetInstance()->GetCompletionStatus(&DwNumberBytes, reinterpret_cast<ULONG_PTR*>(&pCompletionKey), reinterpret_cast<WSAOVERLAPPED **>(&pOverlapped));
 
-		//수정하자...pOverlapped를 어떻게 수정하지ㅠㅠ
 		if (result) // 정상적으로 실행.
 		{
 			//SOCKET_ERROR_LOG_CODE;
@@ -316,38 +315,28 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		{
 			if (pOverlapped != NULL)
 			{
-				UserContainer::GetInstance()->DisConnect(pCompletionKey); 
-				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
+				SPeerContainer<>::GetInstance()->DisConnect(pCompletionKey);
+				IOCP::GetInstance()->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
+				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (ULONG64)pCompletionKey, (ULONG64)pOverlapped, NULL);
 			}
 
 			continue;
 		}
 
 		//이미 연결이 끊김
-		if ((pCompletionKey == NULL) || (pCompletionKey->m_socket == INVALID_SOCKET)) continue;
+		if ((pCompletionKey == NULL) || (pCompletionKey->m_socket == INVALID_SOCKET) || (pCompletionKey->m_puser == NULL)) continue;
 
 		//클라가 연결을 끊음
 		if (DwNumberBytes == 0)
 		{
-			UserContainer::GetInstance()->DisConnect(pCompletionKey); 
-			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
+			SPeerContainer<>::GetInstance()->DisConnect(pCompletionKey); 
+			IOCP::GetInstance()->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
+			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (ULONG64)pCompletionKey, (ULONG64)pOverlapped, NULL);
 			continue;
 		}
 
-		if (pOverlapped->io_type == IO_RECV)
-		{
-			//리시브 패킷 처리 함수
-			pCompletionKey->m_puser->RecvPacket(DwNumberBytes);
-		}
-		else if (pOverlapped->io_type == IO_SENDING)
-		{
-			//송신 처리 함수
-			pCompletionKey->m_puser->CheckSendPacket();
-		}
-		else // IO_NONE 혹은 에러
-		{
-
-		}
+		IOCPWork routinue = (IOCPWork)pOL;
+		routinue(pCompletionKey, pOverlapped, DwNumberBytes);
 	}
 
 	return 0;
@@ -356,13 +345,13 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
 {
 	SOCKET_CONTEXT socket_context;
-	UserContainer* container = UserContainer::GetInstance();
+	SPeerContainer<>* container = SPeerContainer<>::GetInstance();
 
-	SPeer* puser = container->Pop_EmptyUser();
+	SPeer* puser = container->Pop_EmptyPeer();
 
 	if (puser != NULL)
 	{
-		container->Add_CurUser(IOCP::g_userID, puser);
+		container->Add_CurPeer(IOCP::g_userID, puser);
 
 		socket_context.m_addr = client_addr;
 		socket_context.m_socket = client_socket;
@@ -384,6 +373,20 @@ void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
 	return;
 }
 
-void WorkRoutinue()
+void WorkRoutinue(SOCKET_CONTEXT* pCompletionKey, IO_OVERLAPPED* pOverlapped, int DwNumberBytes)
 {
+	if (pOverlapped->io_type == IO_RECV)
+	{
+		//리시브 패킷 처리 함수
+		pCompletionKey->m_puser->RecvPacket(DwNumberBytes);
+	}
+	else if (pOverlapped->io_type == IO_SENDING)
+	{
+		//송신 처리 함수
+		pCompletionKey->m_puser->CheckSendPacket();
+	}
+	else // IO_NONE 혹은 에러
+	{
+
+	}
 }
