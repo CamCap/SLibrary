@@ -79,7 +79,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\LIB\LIB64\</OutDir>
-    <IntDir>$(SolutionDir)\Intermediate64bit\</IntDir>
+    <IntDir>$(SolutionDir)\Intermediate\</IntDir>
     <TargetName>$(ProjectName)_64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

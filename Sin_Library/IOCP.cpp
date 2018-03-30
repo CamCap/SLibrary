@@ -155,7 +155,7 @@ BOOL IOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
 	CSLOCK(m_cs)
 	{
 		// 할당된 구조체와 소켓을 IOCP와 연결한다. 
-		if (!CreateIoCompletionPort(handle, m_handle, (DWORD)context, 0))
+		if (!CreateIoCompletionPort(handle, m_handle, reinterpret_cast<ULONG_PTR>(context), 0))
 		{
 #ifdef _DEBUG
 			char buff[100];
@@ -316,21 +316,21 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 			{
 				SPeerContainer<>::GetInstance()->DisConnect(pCompletionKey);
 				IOCP::GetInstance()->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
-				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (ULONG64)pCompletionKey, (ULONG64)pOverlapped, NULL);
+				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			}
 
 			continue;
 		}
 
 		//이미 연결이 끊김
-		if ((pCompletionKey == NULL)) continue;
+		if ((pCompletionKey == NULL) || (pCompletionKey->GetId() == -100)) continue;
 
 		//클라가 연결을 끊음
 		if (DwNumberBytes == 0)
 		{
 			SPeerContainer<>::GetInstance()->DisConnect(pCompletionKey); 
 			IOCP::GetInstance()->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
-			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (ULONG64)pCompletionKey, (ULONG64)pOverlapped, NULL);
+			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			continue;
 		}
 
