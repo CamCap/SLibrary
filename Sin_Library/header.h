@@ -1,5 +1,12 @@
 #pragma once
 
+#include <stdarg.h>
+#include <vector>
+#include <string>
+
+
+#define PING_CHECK_TIME  10000 //핑 체크 시간
+
 #define SERVER_PORT 14483
 #define SERVER_IP "127.0.0.1"
 
@@ -143,6 +150,36 @@ ScopeExit<T> MakeScopeExit(T t)
     EXPAND_ENUM( IMPLEMENT_ENUM(type, __VA_ARGS__) );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#define DECLARE_CLASS(type, ...) \
+DECLARE_ENUM(type, __VA_ARGS__); \
+typedef std::vector<type> VEC_##type; \
+class Enum##type##Type \
+{\
+public:\
+	Enum##type##Type(int number, type _type...) {\
+		type cur_type = (type)0; \
+		int size = sizeof(type);\
+		for (; cur_type < size ;) \
+		{\
+			m_vecEnum.push_back(cur_type); \
+			cur_type = (type)(cur_type+1);\
+		}\
+		m_type = number;\
+	}\
+	~Enum##type##Type() {}\
+	type GetType() {return m_vecEnum[m_type];}\
+\
+private:\
+	Enum##type##Type() {} \
+	VEC_##type m_vecEnum;\
+	int m_type;\
+};\
+private:\
+	Enum##type##Type m_enum##type;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //---------------------------- 게임 메세지 ------------------//
 #define GM_ERROR                WM_USER + 1 //에러 메세지를 출력.

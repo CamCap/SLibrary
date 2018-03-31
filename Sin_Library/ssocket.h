@@ -147,6 +147,55 @@ protected:
 	int m_id;
 };
 
+//////////////////////////////////////////////////////////////
+
+class SServer
+	:public SPeer
+{
+public:
+	/*
+	DECLARE_ENUM(SERVERTYPE,
+		NONE,
+		LOGIN,
+		MATCH,
+		INGAME
+	);
+	*/
+	DECLARE_CLASS(SERVERTYPE,
+	NONE,
+		LOGIN,
+		MATCH,
+		INGAME
+		);
+
+public:
+	BOOL InitServer(unsigned short id, std::string name, SERVERTYPE type);
+
+	int GetType() { return m_enumSERVERTYPE.GetType(); }
+	std::string GetName() { return m_name; }
+	void OnPingCheck(DWORD tick);
+	void SetPingCheckTime(DWORD tick) { m_pingCheckTime = tick; }
+
+private:
+	virtual void PacketProcess(BTZPacket* packet);
+
+public:
+	SServer();
+	virtual ~SServer();
+
+private:
+	std::string m_name;
+
+	DWORD m_tickPing;
+
+	DWORD m_pingCheckTime;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 namespace SocketTool

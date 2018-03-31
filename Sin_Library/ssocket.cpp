@@ -283,3 +283,27 @@ void SPeer::ErrorHandle(const char* function)
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+BOOL SServer::InitServer(unsigned short id, std::string name, SERVERTYPE type)
+{
+	m_id = id;
+	m_name = name;
+	m_type = type;
+
+	return 0;
+}
+
+void SServer::PacketProcess(BTZPacket * packet)
+{
+}
+
+SServer::SServer()
+	:m_type(SERVERTYPE::NONE), m_pingCheckTime(PING_CHECK_TIME)
+{
+	m_id = -1;
+}
+
+
+SServer::~SServer()
+{
+}
