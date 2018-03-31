@@ -13,7 +13,7 @@ public:
 	~SSocket();
 
 	BOOL CreateWSASocket(int af = AF_INET, int type = SOCK_STREAM, int protocol = 0, LPWSAPROTOCOL_INFOW lpPorotocolInfo = NULL, GROUP g = 0, DWORD dwFlags = WSA_FLAG_OVERLAPPED);
-	
+
 	void InitSocket(SOCKET socket, SOCKADDR_IN addr);
 
 	G_PROPERTY(GetSocket) SOCKET socket;
@@ -48,6 +48,7 @@ SSession을 멤버변수로 가지는 user 클래스를 만들어서  유저 정보도 가지자.
 #define IO_RECV 1
 #define IO_SEND_STAND 2
 #define IO_SENDING 3
+//#define IO_COLSE 4
 #define IO_NONE 0
 
 
@@ -64,11 +65,13 @@ class SSession
 {
 public:
 	DECLARE_ENUM(SESSIONSTATE,
-		ERROR_SENDING,
+	ERROR_SENDING,
 		ERROR_SOCKET_INVALID,
 		RECV_COMPLETE,
 		SEND_COMPLETE
-	)
+		)
+
+		friend class SPeer;
 
 public:
 	SSession();				//OL 할당
@@ -77,13 +80,14 @@ public:
 	void InitSession(SOCKET socket, SOCKADDR_IN addr, char* recvbuffer, int recvlen);
 	void CloseSocket();
 
-	BOOL Recv();	
+	BOOL Recv();
 
 	BOOL Send(char* buffer, int len, int& errorcode);
 	void SendComplete() { m_recvOL.io_type = IO_SEND_STAND; }
 
 private:
 	void SetSessionInfo(); // ip, port, cntError초기화
+
 
 private:
 	SSocket m_socket;
@@ -123,6 +127,8 @@ public:
 	BOOL RecvPacket(int size);
 
 	int GetId() { return m_id; }
+	DWORD GetOLType() { return m_session.m_recvOL.io_type; }
+
 protected:
 	void ErrorHandle(const char* function);
 	virtual void PacketProcess(BTZPacket* packet);
@@ -135,7 +141,6 @@ protected:
 
 	SPacketContainer m_vecSendPacket; // 보내는 패킷 벡터
 	SPacketContainer m_vecStandPacket; // 사용대기중인 패킷 벡터
-
 
 	SCriticalSection m_cs;
 

@@ -74,13 +74,13 @@ void SSession::InitSession(SOCKET socket, SOCKADDR_IN addr, char* recvbuffer, in
 
 void SSession::CloseSocket()
 {
-//	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
+	//	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
 
-//소켓 강제 종료
-///다음의 기능은 http://egloos.zum.com/mirine35/v/5057014 참조
-///우아한 종료로 TIMEOUT이 발생할 수 있음. 시나리오는 위를 참조.
-///이 TIMEOUT이 무한 발생(실제로는 240초까지만)하면, 소켓을 사용할 수 없다.
-///이를 위해 closesocket이 대기하는 시간을 조절
+	//소켓 강제 종료
+	///다음의 기능은 http://egloos.zum.com/mirine35/v/5057014 참조
+	///우아한 종료로 TIMEOUT이 발생할 수 있음. 시나리오는 위를 참조.
+	///이 TIMEOUT이 무한 발생(실제로는 240초까지만)하면, 소켓을 사용할 수 없다.
+	///이를 위해 closesocket이 대기하는 시간을 조절
 
 	LINGER LingerStruct;
 	LingerStruct.l_onoff = 1;
@@ -168,7 +168,7 @@ SPeer::~SPeer()
 void SPeer::Send(BTZPacket* packet)
 {
 	BTZPacket* sendpacket = NULL;
-	
+
 	m_vecStandPacket.Pop(sendpacket);
 
 	if (sendpacket == NULL)
@@ -236,6 +236,7 @@ bool SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
 
 BOOL SPeer::RecvPacket(int size)
 {
+
 	BTZPacket* packet = NULL;
 
 	CSLOCK(m_cs)
