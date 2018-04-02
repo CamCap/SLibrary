@@ -152,8 +152,7 @@ protected:
 class SServer
 	:public SPeer
 {
-public:
-	
+public:	
 	//확장시 union을 사용하자
 	DECLARE_ENUM(SERVERTYPE,
 		NONE,
@@ -161,7 +160,6 @@ public:
 		MATCH,
 		INGAME
 	);
-
 
 public:
 	BOOL InitServer(unsigned short id, std::string name, SERVERTYPE type);
