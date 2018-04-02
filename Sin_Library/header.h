@@ -158,7 +158,7 @@ typedef std::vector<type> VEC_##type; \
 class Enum##type##Type \
 {\
 public:\
-	Enum##type##Type(int number, type _type...) {\
+	Enum##type##Type(int number) {\
 		type cur_type = (type)0; \
 		int size = sizeof(type);\
 		for (; cur_type < size ;) \

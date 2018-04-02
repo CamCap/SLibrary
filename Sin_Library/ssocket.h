@@ -153,25 +153,20 @@ class SServer
 	:public SPeer
 {
 public:
-	/*
+	
+	//확장시 union을 사용하자
 	DECLARE_ENUM(SERVERTYPE,
 		NONE,
 		LOGIN,
 		MATCH,
 		INGAME
 	);
-	*/
-	DECLARE_CLASS(SERVERTYPE,
-	NONE,
-		LOGIN,
-		MATCH,
-		INGAME
-		);
+
 
 public:
 	BOOL InitServer(unsigned short id, std::string name, SERVERTYPE type);
 
-	int GetType() { return m_enumSERVERTYPE.GetType(); }
+	SERVERTYPE GetType() { return m_type; }
 	std::string GetName() { return m_name; }
 	void OnPingCheck(DWORD tick);
 	void SetPingCheckTime(DWORD tick) { m_pingCheckTime = tick; }
@@ -189,6 +184,8 @@ private:
 	DWORD m_tickPing;
 
 	DWORD m_pingCheckTime;
+
+	SERVERTYPE m_type;
 };
 
 

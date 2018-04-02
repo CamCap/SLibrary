@@ -10,7 +10,7 @@ public:
 	static SServerContainer* GetInstance();
 
 	void ServerCheckPing(DWORD tickcount);
-	//bool IsCurrentServer(SServer::SERVERTYPE type);
+	virtual bool IsCurrentServer(SServer::SERVERTYPE type);
 	void AuthServer(SServer* server);
 
 	SServer* FindServer(int id);

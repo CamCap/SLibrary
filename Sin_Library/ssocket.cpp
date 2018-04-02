@@ -254,7 +254,7 @@ BOOL SPeer::RecvPacket(int size)
 
 			if (packet == NULL) break;
 
-			GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (ULONG64)this, 0, (char*)packet);
+			GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
 			PacketProcess(packet);
 		}
 	}

@@ -50,7 +50,7 @@ void SServerContainer::ServerCheckPing(DWORD tick)
 	}
 }
 
-/*
+
 bool SServerContainer::IsCurrentServer(SServer::SERVERTYPE type)
 {
 	SServer* _server = NULL;
@@ -68,7 +68,7 @@ bool SServerContainer::IsCurrentServer(SServer::SERVERTYPE type)
 	}
 	return false;
 }
-*/
+
 void SServerContainer::AuthServer(SServer * server)
 {
 	if (IsCurrentServer(server->GetType()) == false)
