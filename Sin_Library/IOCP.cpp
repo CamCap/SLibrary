@@ -37,7 +37,7 @@ IOCP::~IOCP()
 }
 
 
-BOOL IOCP::CreateIOCP(IOCPAccept _Accept, IOCPWork _WorkThread)
+BOOL IOCP::CreateIOCP(IOCPAccept _Accept, IOCPWork _WorkThread, IOCPDisconnect _Disconnect)
 {
 	WSADATA             wsaData;
 
@@ -62,6 +62,7 @@ BOOL IOCP::CreateIOCP(IOCPAccept _Accept, IOCPWork _WorkThread)
 
 	m_ThreadAccept = _Accept;
 	m_ThreadWork = _WorkThread;
+	m_ThreadDisconnect = _Disconnect;
 
 	if (CreateIOCPThread() == false)
 	{
@@ -114,7 +115,7 @@ void IOCP::CleanUp()
 
 BOOL IOCP::CreateIOCPThread()
 {
-//	if (m_ThreadAccept == NULL || m_ThreadWork == NULL) return false;
+	//	if (m_ThreadAccept == NULL || m_ThreadWork == NULL) return false;
 
 	GetSystemInfo(&m_system);
 
@@ -129,7 +130,7 @@ BOOL IOCP::CreateIOCPThread()
 	{
 
 		//m_threads[i] = CreateThread(NULL, 0, WorkThread, this, 0, &threadid);
-		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, WorkThread, m_ThreadWork, 0, &threadid);
+		m_threads[i] = (HANDLE)_beginthreadex(NULL, 0, WorkThread, NULL, 0, &threadid);
 		//WorkThread만들자.
 		if (m_threads[i] == NULL)
 		{
@@ -139,7 +140,7 @@ BOOL IOCP::CreateIOCPThread()
 		}
 	}
 
-	m_acceptthread = (HANDLE)_beginthreadex(NULL, 0, Accept, m_ThreadAccept, 0, &threadid);
+	m_acceptthread = (HANDLE)_beginthreadex(NULL, 0, Accept, NULL, 0, &threadid);
 	SetThreadPriority(m_acceptthread, THREAD_PRIORITY_HIGHEST);
 
 	return true;
@@ -202,9 +203,6 @@ BOOL IOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, W
 	return TRUE;
 }
 
-
-
-
 unsigned WINAPI Accept(LPVOID pAcceptOL)
 {
 	SSocket accept_socket;
@@ -218,11 +216,9 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		return 0;
 	}
 
-
 	accept_socket.SetAddr(AF_INET, SERVER_PORT, INADDR_ANY);
 
-
-	if (SocketTool::Bind(accept_socket.socket, accept_socket.addr) == INVALID_SOCKET)
+	if (SocketTool::Bind(accept_socket.m_socket, accept_socket.m_addr) == INVALID_SOCKET)
 	{
 
 #ifdef _DEBUG
@@ -244,10 +240,10 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 
 
 	//listen_socket의 Send buffer의 옵션을 확인하기위한 함수
-	if (getsockopt(accept_socket.socket, SOL_SOCKET, SO_SNDBUF, (char *)&send_size, &send_len) != SOCKET_ERROR)
+	if (getsockopt(accept_socket.m_socket, SOL_SOCKET, SO_SNDBUF, (char *)&send_size, &send_len) != SOCKET_ERROR)
 	{
 		send_size *= 100; //send buffer 크기를 왜 100배로?
-		if (setsockopt(accept_socket.socket, SOL_SOCKET, SO_SNDBUF, (char*)&send_size, sizeof(send_len)) == SOCKET_ERROR)
+		if (setsockopt(accept_socket.m_socket, SOL_SOCKET, SO_SNDBUF, (char*)&send_size, sizeof(send_len)) == SOCKET_ERROR)
 		{
 			//setscokopt에 실패했을 때
 
@@ -259,7 +255,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		ERROR_LOG("connect faile2");
 	}
 
-	if (SocketTool::Listen(accept_socket.socket, ListenQueue) == INVALID_SOCKET)
+	if (SocketTool::Listen(accept_socket.m_socket, ListenQueue) == INVALID_SOCKET)
 	{
 		accept_socket.CloseSocket();
 		SOCKET_ERROR_LOG_CODE;
@@ -272,7 +268,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 	//accept 반복
 	while (1)
 	{
-		client_socket = SocketTool::Accept(accept_socket.socket, client_addr);
+		client_socket = SocketTool::Accept(accept_socket.m_socket, client_addr);
 
 		if (client_socket == INVALID_SOCKET)
 		{
@@ -281,10 +277,8 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		}
 
 		//Aceept를 성공한 후에...
-//		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
-
-		IOCPAccept routinue = (IOCPAccept)pAcceptOL;
-		routinue(client_socket, client_addr);
+		//		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
+		(*IOCP::GetInstance()->GetAcceptRoutinue())(client_socket, client_addr);
 	}
 }
 
@@ -303,18 +297,13 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 
 		if (result) // 정상적으로 실행.
 		{
-			//SOCKET_ERROR_LOG_CODE;
-			//continue;
-
-			//if((int)pCompletionKey->)
-
 			if (pOverlapped == NULL) continue;
 		}
 		else
 		{
 			if (pOverlapped != NULL)
 			{
-				SPeerContainer<>::GetInstance()->DisConnect(pCompletionKey);
+				(*IOCP::GetInstance()->GetDisconnectRoutinue())(pCompletionKey);
 				IOCP::GetInstance()->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
 				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			}
@@ -328,14 +317,11 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		//클라가 연결을 끊음
 		if (DwNumberBytes == 0)
 		{
-			SPeerContainer<>::GetInstance()->DisConnect(pCompletionKey); 
 			IOCP::GetInstance()->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
-			GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			continue;
 		}
 
-		IOCPWork routinue = (IOCPWork)pOL;
-		routinue(pCompletionKey, pOverlapped, DwNumberBytes);
+		(*IOCP::GetInstance()->GetWorkRoutinue())(pCompletionKey, pOverlapped, DwNumberBytes);
 	}
 
 	return 0;
@@ -343,13 +329,11 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 
 void AcceptRoutinue(SOCKET client_socket, SOCKADDR_IN client_addr)
 {
-	SPeerContainer<>* container = SPeerContainer<>::GetInstance();
-
-	SPeer* puser = container->Pop_EmptyPeer();
+	SPeer* puser = new SPeer;
 
 	if (puser != NULL)
 	{
-		container->Add_CurPeer(IOCP::g_userID, puser);
+		//container->Add_CurPeer(IOCP::g_userID, puser);
 
 		if (IOCP::GetInstance()->RegisterCompletionPort(client_socket, puser) == false)
 		{
@@ -371,18 +355,25 @@ void WorkRoutinue(SPeer* pCompletionKey, IO_OVERLAPPED* pOverlapped, int DwNumbe
 {
 	if (pOverlapped->io_type == IO_RECV)
 	{
-//		pCompletionKey->m_puser->RecvPacket(DwNumberBytes);
+		//		pCompletionKey->m_puser->RecvPacket(DwNumberBytes);
 		pCompletionKey->RecvPacket(DwNumberBytes);
-		
+
 	}
 	else if (pOverlapped->io_type == IO_SENDING)
 	{
 		//송신 처리 함수
-//		pCompletionKey->m_puser->CheckSendPacket();
+		//		pCompletionKey->m_puser->CheckSendPacket();
 		pCompletionKey->CheckSendPacket();
 	}
 	else // IO_NONE 혹은 에러
 	{
 
 	}
+}
+
+void Disconnect(SPeer* peer)
+{
+	//SPeerContainer<SPeer*>::GetInstance()->DisConnect(peer);
+	peer->ReleaseSocket();
+	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)peer, NULL, NULL);
 }

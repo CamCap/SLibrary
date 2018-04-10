@@ -6,16 +6,16 @@
 template <typename T>
 class Container
 {
-public:
-	using MAP_CONTANINER  = std::map<int, T*>;
-	using VEC_CONTANINER = std::vector<T*>;
+public: 
+	using MAP_CONTANINER = typename std::map<int, T>;
+	using VEC_CONTANINER = typename std::vector<T>;
 
 protected:
 	virtual void MapPopBack(int key);
-	virtual T* VecPopBack(void);
+	virtual T VecPopBack(void);
 
-	virtual void MapPushBack(int id, T* value);
-	virtual void VecPushBack(T* value);
+	virtual void MapPushBack(int id, T value);
+	virtual void VecPushBack(T value);
 
 
 public:
@@ -53,7 +53,7 @@ void Container<T>::MapPopBack(int key)
 }
 
 template<typename T>
-T * Container<T>::VecPopBack()
+T  Container<T>::VecPopBack()
 {
 	if (m_vecCon.size() == 0)
 	{
@@ -61,7 +61,7 @@ T * Container<T>::VecPopBack()
 		return NULL;
 	}
 
-	T* value = NULL;
+	T value = NULL;
 
 	CSLOCK(m_cs)
 	{
@@ -75,14 +75,14 @@ T * Container<T>::VecPopBack()
 }
 
 template<typename T>
-void Container<T>::MapPushBack(int id, T * value)
+void Container<T>::MapPushBack(int id, T value)
 {
 	if (value == NULL)
 		return;
 
 	CSLOCK(m_cs)
 	{
-		m_mapCon.insert(std::pair<int, T*>(id, value));
+		m_mapCon.insert(std::pair<int, T>(id, value));
 	}
 
 	return;
@@ -90,7 +90,7 @@ void Container<T>::MapPushBack(int id, T * value)
 
 
 template<typename T>
-void Container<T>::VecPushBack(T * value)
+void Container<T>::VecPushBack(T value)
 {
 	if (value == NULL) return;
 

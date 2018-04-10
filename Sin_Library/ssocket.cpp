@@ -33,13 +33,14 @@ BOOL SSocket::CreateWSASocket(int af, int type, int protocol, LPWSAPROTOCOL_INFO
 void SSocket::InitSocket(SOCKET socket, SOCKADDR_IN addr)
 {
 	m_socket = socket;
-	SetAddr(addr);
+	m_addr = addr;
 }
 
 void SSocket::SetAddr(int family, int port, u_short addr)
 {
 	memset(&m_addr, 0, sizeof(m_addr));
 
+	//	m_addr.sin_addr.
 	m_addr.sin_family = family;
 	m_addr.sin_port = htons(port);
 	m_addr.sin_addr.s_addr = htonl(addr);
@@ -86,7 +87,7 @@ void SSession::CloseSocket()
 	LingerStruct.l_onoff = 1;
 	LingerStruct.l_linger = 0;
 
-	if (setsockopt(m_socket.socket, SOL_SOCKET, SO_LINGER, (char*)&LingerStruct, sizeof(LingerStruct) == SOCKET_ERROR))
+	if (setsockopt(m_socket.m_socket, SOL_SOCKET, SO_LINGER, (char*)&LingerStruct, sizeof(LingerStruct) == SOCKET_ERROR))
 	{
 		//return;
 		ERROR_LOG("Set Socket LINGER Error ");
@@ -106,7 +107,7 @@ void SSession::SetSessionInfo()
 
 BOOL SSession::Recv()
 {
-	SOCKET_INVALID_CHECK(m_socket.socket);
+	SOCKET_INVALID_CHECK(m_socket.m_socket);
 	if (m_recvOL.io_type == IO_NONE) return false;
 
 
@@ -116,7 +117,7 @@ BOOL SSession::Recv()
 	memset(&m_recvOL, 0, sizeof(WSAOVERLAPPED));
 	m_recvOL.io_type = IO_RECV;
 
-	int result = WSARecv(m_socket.socket, &m_recvOL.io_buff, 1, &dwRecvNumBytes, &dwFlags, (WSAOVERLAPPED*)&m_recvOL, NULL);
+	int result = WSARecv(m_socket.m_socket, &m_recvOL.io_buff, 1, &dwRecvNumBytes, &dwFlags, (WSAOVERLAPPED*)&m_recvOL, NULL);
 
 	if (result == SOCKET_ERROR)
 		return FALSE;
@@ -126,7 +127,7 @@ BOOL SSession::Recv()
 
 BOOL SSession::Send(char* buffer, int len, int& errcode)
 {
-	SOCKET_INVALID_CHECK(m_socket.socket);
+	SOCKET_INVALID_CHECK(m_socket.m_socket);
 
 	if (m_sendOL.io_type == IO_SENDING) {
 		errcode = SESSIONSTATE::ERROR_SENDING;
@@ -142,7 +143,7 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 	memset(&m_sendOL, 0, sizeof(WSAOVERLAPPED));
 	m_sendOL.io_type = IO_SENDING;
 
-	int result = WSASend(m_socket.socket, &m_sendOL.io_buff, 1, &dwsendbyte, dwflag, (WSAOVERLAPPED*)&m_sendOL, NULL);
+	int result = WSASend(m_socket.m_socket, &m_sendOL.io_buff, 1, &dwsendbyte, dwflag, (WSAOVERLAPPED*)&m_sendOL, NULL);
 	//LPWSAOVERLAPPED_COMPLETION_ROUTINE
 	if (result == SOCKET_ERROR)
 	{
@@ -236,7 +237,6 @@ bool SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
 
 BOOL SPeer::RecvPacket(int size)
 {
-
 	BTZPacket* packet = NULL;
 
 	CSLOCK(m_cs)
@@ -255,7 +255,7 @@ BOOL SPeer::RecvPacket(int size)
 			if (packet == NULL) break;
 
 			GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
-			PacketProcess(packet);
+			_PacketProcess(packet);
 		}
 	}
 
@@ -263,11 +263,6 @@ BOOL SPeer::RecvPacket(int size)
 
 	return TRUE;
 }
-
-void SPeer::PacketProcess(BTZPacket * packet)
-{
-}
-
 
 void SPeer::ErrorHandle(const char* function)
 {
@@ -284,21 +279,17 @@ void SPeer::ErrorHandle(const char* function)
 
 ////////////////////////////////////////////////////////////////////////////
 
-BOOL SServer::InitServer(unsigned short id, std::string name, SERVERTYPE type)
+BOOL SServer::InitServer(unsigned short id, std::string name)
 {
 	m_id = id;
 	m_name = name;
-	m_type = type;
 
 	return 0;
 }
 
-void SServer::PacketProcess(BTZPacket * packet)
-{
-}
 
 SServer::SServer()
-	:m_type(SERVERTYPE::NONE), m_pingCheckTime(PING_CHECK_TIME)
+	:m_pingCheckTime(PING_CHECK_TIME)
 {
 	m_id = -1;
 }
@@ -306,4 +297,25 @@ SServer::SServer()
 
 SServer::~SServer()
 {
+}
+
+
+void SServer::OnPingCheck(DWORD tick)
+{
+	if (tick - m_tickPing >= PING_CHECK_TIME) // 시간초과
+	{
+		m_tickPing = tick;
+
+		if (GetOLType() != IO_NONE)
+		{
+#ifdef _DEBUG
+#endif
+			ReleaseSocket();
+		}
+		else
+		{
+#ifdef _DEBUG
+#endif
+		}
+	}
 }

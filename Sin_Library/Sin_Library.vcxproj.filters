@@ -45,9 +45,6 @@
     <ClInclude Include="Container.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="SPeerContainer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SServerContainer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>

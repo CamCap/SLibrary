@@ -1,5 +1,5 @@
 #pragma once
-#include "SPeerContainer.h"
+#include "SServerContainer.h"
 
 #define MAX_WORKER_THREAD 100
 #define ListenQueue 10
@@ -11,18 +11,19 @@ unsigned WINAPI WorkThread(LPVOID pOL);
 
 void AcceptRoutinue(SOCKET, SOCKADDR_IN);
 void WorkRoutinue(SPeer*, IO_OVERLAPPED*, int);
-
-//라이브러리니까 싱글톤 패턴으로 구현할 필요가 없지 않을까??
-//상속해서 쓰는게 좋을 것같긴한데..
+void Disconnect(SPeer*);
 
 typedef void(*IOCPAccept)(SOCKET, SOCKADDR_IN);
 typedef void(*IOCPWork)(SPeer*, IO_OVERLAPPED*, int);
+typedef void(*IOCPDisconnect)(SPeer*);
 
 
 class IOCP
 {
 public:
-	BOOL CreateIOCP(IOCPAccept _Accept = AcceptRoutinue, IOCPWork _WorkThread = WorkRoutinue); //IOCP를 생성하자
+	BOOL CreateIOCP(IOCPAccept _Accept = AcceptRoutinue, \
+		IOCPWork _WorkThread = WorkRoutinue, \
+		IOCPDisconnect _Disconnect = Disconnect); //IOCP를 생성하자
 	void CleanUp();
 
 
@@ -32,11 +33,15 @@ public:
 	BOOL PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred = 0, WSAOVERLAPPED* pOverlapped = NULL);
 
 	static IOCP* GetInstance();
+	
+	IOCPAccept* GetAcceptRoutinue() { return &m_ThreadAccept; }
+	IOCPWork* GetWorkRoutinue() { return &m_ThreadWork; }
+	IOCPDisconnect* GetDisconnectRoutinue() { return &m_ThreadDisconnect; }
 
 public:
 	explicit IOCP();
 	~IOCP();
-	
+
 private:
 	BOOL CreateIOCPThread();
 
@@ -44,9 +49,7 @@ public:
 	static DWORD g_userID;
 
 protected:
-
 	SCriticalSection m_cs;
-
 
 private:
 
@@ -61,5 +64,6 @@ private:
 
 	IOCPAccept m_ThreadAccept;
 	IOCPWork m_ThreadWork;
+	IOCPDisconnect m_ThreadDisconnect;
 };
 

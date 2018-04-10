@@ -151,61 +151,6 @@ ScopeExit<T> MakeScopeExit(T t)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum class SServerType
-{
-	NONE,
-	LOGIN,
-	MATCH,
-	INGAME
-};
-
-template <typename T>
-class InnerVec
-{
-public:
-	InnerVec() {
-		T cur_type = (type)0;
-		int size = sizeof(T);
-		for (; cur_type < size;)
-		{
-			m_vecEnum.push_back(cur_type); 
-			cur_type = (T)(cur_type + 1); 
-		}
-	}
-
-	T GetValue(int num) { return m_inner[num]; }
-
-private:
-	static std::vector<T> m_inner;
-};
-
-template <typename T>
-class EnumClass
-{
-public:
-	EnumClass(int num) :m_vec(), m_num(num) {}
-	T GetType() { return m_vec.GetValue(m_num); }
-
-private:
-	InnerVec<T> m_vec;
-	int m_num;
-};
-
-#define DECLARE_CLASS(type, ...) \
-DECLARE_ENUM(type, __VA_ARGS__); \
-class Enum##type \
-{\
-public:\
-	Enum##type(int number) : EnumClass(number) {\
-	}\
-	~Enum##type() {}\
-\
-private:\
-	Enum##type() {} \
-};\
-private:\
-	EnumClass<type> m_enum##type;
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 #define DECLARE_CLASS(type, ...) \

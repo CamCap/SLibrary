@@ -5,6 +5,8 @@
 #include "Packet.h"
 #include "CriticalSection.h"
 
+typedef void(*PacketProcess)(BTZPacket*);
+
 class SSocket
 {
 public:
@@ -16,23 +18,20 @@ public:
 
 	void InitSocket(SOCKET socket, SOCKADDR_IN addr);
 
-	G_PROPERTY(GetSocket) SOCKET socket;
-	G_PROPERTY(GetAddr) SOCKADDR_IN addr;
 
-	SOCKET GetSocket() { return m_socket; }
-	SOCKADDR_IN GetAddr() { return m_addr; }
 
-	void SetAddr(int family, int addr, u_short port);
+	//SOCKET GetSocket() { return m_socket; }
+	//SOCKADDR_IN GetAddr() { return m_addr; }
+
+	//void SetSocket(SOCKET socket) { m_socket = socket; }
 	void SetAddr(SOCKADDR_IN sockaddr);
+	void SetAddr(int family, int addr, u_short port);
 
 	void ReleaseSocket() { m_socket = INVALID_SOCKET; }
 
 	void CloseSocket() { closesocket(m_socket); m_socket = INVALID_SOCKET; }
 
-private:
-
-private:
-
+public:
 	SOCKET m_socket;
 	SOCKADDR_IN m_addr;
 };
@@ -110,7 +109,6 @@ class SPeer
 public:
 	DECLARE_ENUM(
 	SUSERSTATE,
-
 		ERROR_SENDPACKET_NULL
 		);
 
@@ -131,8 +129,14 @@ public:
 
 protected:
 	void ErrorHandle(const char* function);
-	virtual void PacketProcess(BTZPacket* packet);
+	//	virtual void PacketProcess(BTZPacket* packet);
 	void Recv();
+
+private:
+	typedef void(*PacketProcess)(BTZPacket*);
+
+public:
+	PacketProcess _PacketProcess;
 
 protected:
 	SSession m_session;
@@ -152,25 +156,14 @@ protected:
 class SServer
 	:public SPeer
 {
-public:	
-	//확장시 union을 사용하자
-	DECLARE_ENUM(SERVERTYPE,
-		NONE,
-		LOGIN,
-		MATCH,
-		INGAME
-	);
+public:
 
 public:
-	BOOL InitServer(unsigned short id, std::string name, SERVERTYPE type);
+	BOOL InitServer(unsigned short id, std::string name);
 
-	SERVERTYPE GetType() { return m_type; }
 	std::string GetName() { return m_name; }
 	void OnPingCheck(DWORD tick);
 	void SetPingCheckTime(DWORD tick) { m_pingCheckTime = tick; }
-
-private:
-	virtual void PacketProcess(BTZPacket* packet);
 
 public:
 	SServer();
@@ -182,8 +175,6 @@ private:
 	DWORD m_tickPing;
 
 	DWORD m_pingCheckTime;
-
-	SERVERTYPE m_type;
 };
 
 
