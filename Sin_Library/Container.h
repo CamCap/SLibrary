@@ -1,7 +1,9 @@
 #pragma once
+#include <functional>
 #include <map>
 #include <vector>
 #include "CriticalSection.h"
+#include <algorithm>
 
 template <class _Ty>
 class VecContainer
@@ -13,7 +15,11 @@ public:
 	void push(_Ty *pElement);
 	_Ty* pop();
 
-protected:
+	template <typename find_function>
+	constexpr _Ty* find(find_function* ty);
+
+	template <typename process_function, typename... Args>
+	void process(std::function<process_function> pf, Args... arg);
 
 protected:
 	int		m_count; //size
@@ -99,7 +105,33 @@ _Ty* VecContainer<_Ty>::pop()
 	return pElement;
 }
 
+////////////////////////////////////////////////////////////////////
 
+
+template<class _Ty>
+template<typename find_function>
+inline constexpr _Ty * VecContainer<_Ty>::find(find_function * ty)
+{
+	CSLOCK(this->m_cs)
+	{
+		typename std::vector<_Ty *>::iterator it = std::find_if(this->m_pVec, this->m_pVec.end(), ty);
+	}
+	if (*it == this->m_pVec.end()) return NULL;
+
+	return *it;
+}
+
+////////////////////////////////////////////////////////////////////
+
+template<class _Ty>
+template<typename process_function, typename... Args>
+inline void VecContainer<_Ty>::process(std::function<process_function> pf, Args... arg)
+{
+	pf(arg...);
+}
+
+
+//////////////////////////////////////////////////
 template <class _Ty>
 class MapContainer
 {
@@ -110,7 +142,11 @@ public:
 	void push(_Ty *pElement);
 	_Ty* pop();
 
-protected:
+	template <typename find_function>
+	constexpr _Ty* find(find_function ff);
+
+	template <typename process_function, typename... Args>
+	void process(process_function pf, Args... arg);
 
 protected:
 	int		m_count; //size
@@ -197,3 +233,32 @@ _Ty* MapContainer<_Ty>::pop()
 	return pElement;
 }
 
+/////////////////////////////////
+ 
+template<class _Ty>
+template<typename find_function>
+inline constexpr _Ty * MapContainer<_Ty>::find(find_function ff)
+{
+	CSLOCK(this->m_cs)
+	{
+		typename std::map<int, _Ty*>::iterator it = std::find_if(m_pMap.begin(), m_pMap.end(), ff);
+	}
+	if (*it == this->m_pMap.end()) return NULL;
+	
+	return *it;
+}
+
+template<class _Ty>
+template<typename process_function, typename ...Args>
+inline void MapContainer<_Ty>::process(process_function pf, Args ...arg)
+{
+//	std::function<process_function> f;
+	process_function f;
+	typename std::map<int, _Ty*>::iterator it = this->m_pMap.begin();
+
+	for (it; it != this->m_pMap.end(); it++)
+	{
+		f = std::bind(&process_function, *it);
+		f(arg...);
+	}
+}
