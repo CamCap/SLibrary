@@ -3,104 +3,197 @@
 #include <vector>
 #include "CriticalSection.h"
 
-template <typename T>
-class Container
+template <class _Ty>
+class VecContainer
 {
-public: 
-	using MAP_CONTANINER = typename std::map<int, T>;
-	using VEC_CONTANINER = typename std::vector<T>;
-
-protected:
-	virtual void MapPopBack(int key);
-	virtual T VecPopBack(void);
-
-	virtual void MapPushBack(int id, T value);
-	virtual void VecPushBack(T value);
-
-
 public:
-	Container();
-	virtual ~Container();
+	VecContainer(int size);
+	virtual ~VecContainer();
+
+	void push(_Ty *pElement);
+	_Ty* pop();
 
 protected:
-	MAP_CONTANINER m_mapCon;
-	VEC_CONTANINER m_vecCon;
+
+protected:
+	int		m_count; //size
+
+	std::vector<_Ty *> m_pVec;
 
 	SCriticalSection m_cs;
 };
 
-template<typename T>
-Container<T>::Container()
-{
-}
 
-template<typename T>
-Container<T>::~Container()
+//------------------------------------------------------------------------------
+//
+template <class _Ty>
+VecContainer<_Ty>::VecContainer(int size)
 {
-}
+	m_count = size;
 
-template<typename T>
-void Container<T>::MapPopBack(int key)
-{
-	CSLOCK(m_cs)
+	_Ty *p;
+	for (int i = 0; i < size; ++i)
 	{
-		MAP_CONTANINER::iterator it = m_mapCon.find(key);
-		if (it != m_mapCon.end())
-		{
-			m_mapCon.erase(it);
-		}
+		p = new type;
+		m_pVec.push_back(p);
 	}
 }
 
-template<typename T>
-T  Container<T>::VecPopBack()
+//------------------------------------------------------------------------------
+//
+template <class _Ty>
+VecContainer<_Ty>::~VecContainer()
 {
-	if (m_vecCon.size() == 0)
+	_Ty *p;
+	while (m_pVec.size() > 0)
 	{
-		//UnLock();
-		return NULL;
+		p = m_pVec.front();
+		SAFE_DELETE(p);
+
+		m_pVec.pop_front();
 	}
-
-	T value = NULL;
-
-	CSLOCK(m_cs)
-	{
-		VEC_CONTANINER::iterator it = m_vecCon.begin();
-
-		value = *it;
-		m_vecCon.erase(it);
-	}
-
-	return value;
 }
 
-template<typename T>
-void Container<T>::MapPushBack(int id, T value)
+
+//------------------------------------------------------------------------------
+//
+template <class _Ty>
+void VecContainer<_Ty>::push(_Ty *pElement)
 {
-	if (value == NULL)
+	if (!pElement)
 		return;
 
 	CSLOCK(m_cs)
 	{
-		m_mapCon.insert(std::pair<int, T>(id, value));
+		m_pVec.push_back(pElement);
 	}
-
-	return;
 }
 
 
-template<typename T>
-void Container<T>::VecPushBack(T value)
+//------------------------------------------------------------------------------
+// push 보다 pop 가 먼저 일어남
+template <class _Ty>
+_Ty* VecContainer<_Ty>::pop()
 {
-	if (value == NULL) return;
+	_Ty *pElement = NULL;
 
 	CSLOCK(m_cs)
 	{
-		VEC_CONTANINER::iterator it = std::find(m_vecCon.begin(), m_vecCon.end(), value);
+		if (m_pVec.size() > 0)
+		{
+			pElement = m_pVec.front();
+			if (pElement != NULL)
+				m_pVec.pop_front();
+			else
+				pElement = new type;
+		}
+		else
+		{
+#ifdef _DEBUG
+			OutputDebugString("[ERROR]다써서 다시 할당한다.[CArrayListContainer]\n");
+#endif
+			pElement = new type;
+		}
+	}
 
-		if (it != m_vecCon.end())
-			return;
+	return pElement;
+}
 
-		m_vecCon.push_back(value);
+
+template <class _Ty>
+class MapContainer
+{
+public:
+	MapContainer(int size);
+	virtual ~MapContainer();
+
+	void push(_Ty *pElement);
+	_Ty* pop();
+
+protected:
+
+protected:
+	int		m_count; //size
+
+	std::map<int, _Ty *> m_pMap;
+
+	SCriticalSection m_cs;
+};
+
+
+//------------------------------------------------------------------------------
+//
+template <class _Ty>
+MapContainer<_Ty>::MapContainer(int size)
+{
+	m_count = size;
+
+	_Ty *p;
+	for (int i = 0; i < size; ++i)
+	{
+		p = new type;
+		m_pMap.insert(p);
 	}
 }
+
+//------------------------------------------------------------------------------
+//
+template <class _Ty>
+MapContainer<_Ty>::~MapContainer()
+{
+	_Ty *p;
+	while (m_pVec.size() > 0)
+	{
+		p = m_pMap.begin();
+		SAFE_DELETE(p);
+
+		m_pMap.erase(p);
+	}
+}
+
+
+//------------------------------------------------------------------------------
+//
+template <class _Ty>
+void MapContainer<_Ty>::push(_Ty *pElement)
+{
+	if (!pElement)
+		return;
+
+	CSLOCK(m_cs)
+	{
+		m_pMap.insert(pElement);
+	}
+}
+
+
+//------------------------------------------------------------------------------
+// push 보다 pop 가 먼저 일어남
+template <class _Ty>
+_Ty* MapContainer<_Ty>::pop()
+{
+	_Ty *pElement = NULL;
+
+	CSLOCK(m_cs)
+	{
+		if (m_pVec.size() > 0)
+		{
+			pElement = m_pMap.begin();
+
+			if (pElement != NULL)
+				m_pMap.erase(pElement);
+			else
+				pElement = new type;
+		}
+		else
+		{
+#ifdef _DEBUG
+			OutputDebugString("[ERROR]다써서 다시 할당한다.[CArrayListContainer]\n");
+#endif
+			pElement = new type;
+		}
+	}
+
+	return pElement;
+}
+
