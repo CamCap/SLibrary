@@ -49,9 +49,6 @@ private:
 	LIST_MSG m_msg; // 메인 스레드에서 처리하기 위한 메시지 리스트
 	SCriticalSection m_cs;
 	HANDLE m_event; // 스레드 대기 및 
-
-private:
-	static GameMessageManager* m_instance;
 };
 
 //------------------------------------------------------------//
