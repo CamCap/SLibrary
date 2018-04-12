@@ -1,9 +1,7 @@
 #include "stdafx.h"
 #include "GameMessage.h"
-#include "IOCP.h"
+#include "SIOCP.h"
 
-
-GameMessageManager* GameMessageManager::m_instance = NULL;
 
 GameMessageManager::GameMessageManager()
 {
@@ -15,14 +13,6 @@ GameMessageManager::~GameMessageManager()
 	CloseHandle(m_event); m_event = NULL;
 
 	DestoryMsg();
-}
-
-GameMessageManager * GameMessageManager::Instnace()
-{
-	if (m_instance == NULL)
-		m_instance = new GameMessageManager();
-
-	return m_instance;
 }
 
 void GameMessageManager::DestoryMsg()
@@ -166,18 +156,18 @@ DWORD WINAPI GameMessageManager::GameMsgLoop(LPVOID pArg)
 
 	while (true)
 	{
-		if ((msg = GameMessageManager::Instnace()->GetGameMessage()) != NULL)
+		if ((msg = GameMessageManager::GetInstance()->GetGameMessage()) != NULL)
 		{
 
 			if (msg->msg == GM_QUIT)
 			{
-				GameMessageManager::Instnace()->PushIocpMsg(msg);
+				GameMessageManager::GetInstance()->PushIocpMsg(msg);
 				break;
 			}
 
 			GameMessageProcedure(msg->msg, msg->wParam, msg->lParam, msg->packet);
 
-			GameMessageManager::Instnace()->PushIocpMsg(msg);
+			GameMessageManager::GetInstance()->PushIocpMsg(msg);
 		}
 	}
 

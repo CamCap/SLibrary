@@ -16,10 +16,14 @@ public:
 	_Ty* pop();
 
 	template <typename find_function>
-	constexpr _Ty* find(find_function* ty);
+	constexpr _Ty* find(find_function ty);
 
 	template <typename process_function, typename... Args>
-	void process(std::function<process_function> pf, Args... arg);
+	void process(process_function pf, Args... arg);
+
+	template <typename process_function>
+	void process(process_function pf);
+
 
 protected:
 	int		m_count; //size
@@ -40,7 +44,7 @@ VecContainer<_Ty>::VecContainer(int size)
 	_Ty *p;
 	for (int i = 0; i < size; ++i)
 	{
-		p = new type;
+		p = new _Ty;
 		m_pVec.push_back(p);
 	}
 }
@@ -53,10 +57,10 @@ VecContainer<_Ty>::~VecContainer()
 	_Ty *p;
 	while (m_pVec.size() > 0)
 	{
-		p = m_pVec.front();
+		p = *m_pVec.end();
 		SAFE_DELETE(p);
 
-		m_pVec.pop_front();
+		m_pVec.pop_back();
 	}
 }
 
@@ -87,18 +91,15 @@ _Ty* VecContainer<_Ty>::pop()
 	{
 		if (m_pVec.size() > 0)
 		{
-			pElement = m_pVec.front();
+			pElement = *m_pVec.end();
 			if (pElement != NULL)
-				m_pVec.pop_front();
+				m_pVec.pop_back();
 			else
-				pElement = new type;
+				pElement = new _Ty;
 		}
 		else
 		{
-#ifdef _DEBUG
-			OutputDebugString("[ERROR]다써서 다시 할당한다.[CArrayListContainer]\n");
-#endif
-			pElement = new type;
+			pElement = new _Ty;
 		}
 	}
 
@@ -107,16 +108,17 @@ _Ty* VecContainer<_Ty>::pop()
 
 ////////////////////////////////////////////////////////////////////
 
-
 template<class _Ty>
 template<typename find_function>
-inline constexpr _Ty * VecContainer<_Ty>::find(find_function * ty)
+inline constexpr _Ty * VecContainer<_Ty>::find(find_function ty)
 {
+	typename std::vector<_Ty *>::iterator it;
+	
 	CSLOCK(this->m_cs)
 	{
-		typename std::vector<_Ty *>::iterator it = std::find_if(this->m_pVec, this->m_pVec.end(), ty);
+		it = std::find_if(this->m_pVec.begin(), this->m_pVec.end(), ty);
 	}
-	if (*it == this->m_pVec.end()) return NULL;
+	if (it == this->m_pVec.end()) return NULL;
 
 	return *it;
 }
@@ -125,11 +127,28 @@ inline constexpr _Ty * VecContainer<_Ty>::find(find_function * ty)
 
 template<class _Ty>
 template<typename process_function, typename... Args>
-inline void VecContainer<_Ty>::process(std::function<process_function> pf, Args... arg)
+inline void VecContainer<_Ty>::process(process_function pf, Args... arg)
 {
-	pf(arg...);
+	typename std::vector<_Ty*>::iterator it = this->m_pVec.begin();
+
+	for (it; it != this->m_pVec.end(); it++)
+	{
+		pf(*it,  arg...);
+	}
 }
 
+
+template<class _Ty>
+template<typename process_function>
+inline void VecContainer<_Ty>::process(process_function pf)
+{
+	typename std::vector<_Ty*>::iterator it = this->m_pVec.begin();
+
+	for (it; it != this->m_pVec.end(); it++)
+	{
+		pf(*it);
+	}
+}
 
 //////////////////////////////////////////////////
 template <class _Ty>
@@ -167,8 +186,8 @@ MapContainer<_Ty>::MapContainer(int size)
 	_Ty *p;
 	for (int i = 0; i < size; ++i)
 	{
-		p = new type;
-		m_pMap.insert(p);
+		p = new _Ty;
+		this->m_pMap.insert(p);
 	}
 }
 
@@ -178,12 +197,12 @@ template <class _Ty>
 MapContainer<_Ty>::~MapContainer()
 {
 	_Ty *p;
-	while (m_pVec.size() > 0)
+	while (this->m_pMap.size() > 0)
 	{
-		p = m_pMap.begin();
+		p = (this->m_pMap.begin())->second;
 		SAFE_DELETE(p);
 
-		m_pMap.erase(p);
+		this->m_pMap.erase(p);
 	}
 }
 
@@ -198,7 +217,7 @@ void MapContainer<_Ty>::push(_Ty *pElement)
 
 	CSLOCK(m_cs)
 	{
-		m_pMap.insert(pElement);
+		m_pMap.insert(m_pMap.size()+1, pElement);
 	}
 }
 
@@ -239,26 +258,27 @@ template<class _Ty>
 template<typename find_function>
 inline constexpr _Ty * MapContainer<_Ty>::find(find_function ff)
 {
+	typename std::map<int, _Ty*>::iterator it;
+
 	CSLOCK(this->m_cs)
 	{
-		typename std::map<int, _Ty*>::iterator it = std::find_if(m_pMap.begin(), m_pMap.end(), ff);
+		it = std::find_if(m_pMap.begin(), m_pMap.end(), ff);
+
+		if (it == this->m_pMap.end()) return NULL;
 	}
-	if (*it == this->m_pMap.end()) return NULL;
-	
-	return *it;
+
+	return (it->second);
 }
 
 template<class _Ty>
 template<typename process_function, typename ...Args>
 inline void MapContainer<_Ty>::process(process_function pf, Args ...arg)
 {
-//	std::function<process_function> f;
-	process_function f;
 	typename std::map<int, _Ty*>::iterator it = this->m_pMap.begin();
 
 	for (it; it != this->m_pMap.end(); it++)
 	{
-		f = std::bind(&process_function, *it);
-		f(arg...);
+		//f = std::bind(&pf, *it, arg...);
+		pf(arg...);
 	}
 }

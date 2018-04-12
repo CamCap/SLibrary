@@ -14,7 +14,7 @@ typedef void(*IOCPWork)(SPeer*, IO_OVERLAPPED*, int);
 typedef void(*IOCPDisconnect)(SPeer*);
 
 
-class IOCP
+class SIOCP
 {
 public:
 	BOOL CreateIOCP(); //IOCP研 持失馬切
@@ -27,8 +27,8 @@ public:
 	BOOL PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred = 0, WSAOVERLAPPED* pOverlapped = NULL);
 		
 public:
-	explicit IOCP();
-	~IOCP();
+	explicit SIOCP();
+	~SIOCP();
 
 private:
 	BOOL CreateIOCPThread();

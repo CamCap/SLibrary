@@ -1,5 +1,5 @@
 #pragma once
-
+#include <functional>
 #include "header.h"
 #include <WinSock2.h>
 #include "Packet.h"
@@ -104,6 +104,7 @@ private:
 
 #define USER_BUFFER_SIZE 1024
 
+
 class SPeer
 {
 public:
@@ -132,11 +133,9 @@ protected:
 	//	virtual void PacketProcess(BTZPacket* packet);
 	void Recv();
 
-private:
-	typedef void(*PacketProcess)(BTZPacket*);
 
 public:
-	PacketProcess _PacketProcess;
+	std::function<void(BTZPacket*)> m_packetProcess;
 
 protected:
 	SSession m_session;
@@ -159,7 +158,7 @@ class SServer
 public:
 
 public:
-	BOOL InitServer(unsigned short id, std::string name);
+	void SetName(std::string name);
 
 	std::string GetName() { return m_name; }
 	void OnPingCheck(DWORD tick);

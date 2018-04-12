@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include "SSingleton.h"
 #include "CriticalSection.h"
 #include "header.h"
 
@@ -16,14 +17,13 @@ struct GameMSG
 typedef std::list<GameMSG*> LIST_MSG;
 
 class GameMessageManager
+	:public SSingleton<GameMessageManager>
 {
 public:
 	GameMessageManager();
 	~GameMessageManager();
 
 	void SendGameMessage(DWORD msg, DWORD wParam, DWORD lParam, char* packet);
-
-	static GameMessageManager* Instnace();
 
 	GameMSG* GetGameMessage() { return PopMsg(); }
 	void PushIocpMsg(GameMSG* msg);

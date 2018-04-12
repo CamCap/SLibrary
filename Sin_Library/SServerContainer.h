@@ -15,7 +15,7 @@ private:
 
 public:
 	void PushServer(T* _ty) { m_vecServer.push(_ty); }
-	void PushAuthServer(T* _ty) { m_mapServer.push(_ty); }
+	void PushAuthServer(T* _ty) { m_vecAuth.push(_ty); }
 	T* PopServer() { return m_vecServer.pop(); }
 	T* PopAuthServer(T* _ty) { return m_mapServer.pop(); }
 	
@@ -28,8 +28,12 @@ public:
 		this->PushServer(pElement);
 	}
 
+	//using find_function = bool (*_find_function)(T*);
+	//typedef bool(*find_function)(T*);
+
 	T* FindServer(int id) {
-		T* pElement = m_mapServer.find([&](T* ty)->bool {\
+
+		T* pElement = m_vecAuth.find([&](T* ty)->bool {\
 			return id == ty->GetID(); \
 		});
 
@@ -42,16 +46,22 @@ public:
 
 		m_tickPing = tick;
 
-		m_mapServer.process < std::function<void(DWORD)>, DWORD> (std::bind(&SServer::OnPingCheck), tick);
+		m_vecAuth.process([&](T* server)->void { dynamic_cast<SServer*>(server)->OnPingCheck(tick); });
+	}
+
+	template <typename process_function, typename... Args>
+	void process(process_function pf, Args... arg)
+	{
+		m_vecAuth.process(pf, arg...);
 	}
 
 public:
-	SServerContainer() {}
+	SServerContainer() : m_vecServer(0), m_vecAuth(0) {}
 	~SServerContainer() {}
 
 private:
 	VecContainer<T> m_vecServer; // 미사용 서버
-	MapContainer<T> m_mapServer; // 사용중 서버
+	VecContainer<T> m_vecAuth; // 사용중 서버
 
 	DWORD m_tickPing;
 };

@@ -3,7 +3,7 @@
 #include <cstdio>
 #include "Log.h"
 #include "GameMessage.h"
-#include "IOCP.h"
+#include "SIOCP.h"
 
 SSocket::SSocket()
 {
@@ -254,8 +254,8 @@ BOOL SPeer::RecvPacket(int size)
 
 			if (packet == NULL) break;
 
-			GameMessageManager::Instnace()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
-			_PacketProcess(packet);
+			GameMessageManager::GetInstance()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
+			m_packetProcess(packet);
 		}
 	}
 
@@ -279,12 +279,9 @@ void SPeer::ErrorHandle(const char* function)
 
 ////////////////////////////////////////////////////////////////////////////
 
-BOOL SServer::InitServer(unsigned short id, std::string name)
+void SServer::SetName(std::string name)
 {
-	m_id = id;
 	m_name = name;
-
-	return 0;
 }
 
 

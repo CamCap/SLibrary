@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "IOCP.h"
+#include "SIOCP.h"
 #include "SSocket.h"
 #include "Log.h"
 #include <process.h>
@@ -9,22 +9,22 @@
 unsigned WINAPI Accept(LPVOID pAcceptOL);
 unsigned WINAPI WorkThread(LPVOID pOL);
 
-DWORD IOCP::g_userID = USER_ID_INDEX;
+DWORD SIOCP::g_userID = USER_ID_INDEX;
 
 
-IOCP::IOCP()
+SIOCP::SIOCP()
 	:m_cs(), m_ThreadAccept(NULL), m_ThreadWork(NULL), m_ThreadDisconnect(NULL)
 {
 }
 
 
-IOCP::~IOCP()
+SIOCP::~SIOCP()
 {
 	CleanUp();
 }
 
 
-BOOL IOCP::CreateIOCP()
+BOOL SIOCP::CreateIOCP()
 {
 	WSADATA             wsaData;
 
@@ -59,7 +59,7 @@ BOOL IOCP::CreateIOCP()
 }
 
 
-void IOCP::CleanUp()
+void SIOCP::CleanUp()
 {
 	if (m_handle)
 	{
@@ -97,7 +97,7 @@ void IOCP::CleanUp()
 	WSACleanup();
 }
 
-BOOL IOCP::CreateIOCPThread()
+BOOL SIOCP::CreateIOCPThread()
 {
 	//	if (m_ThreadAccept == NULL || m_ThreadWork == NULL) return false;
 
@@ -130,7 +130,7 @@ BOOL IOCP::CreateIOCPThread()
 	return true;
 }
 
-BOOL IOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
+BOOL SIOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
 {
 	if ((context == NULL) || (socket == INVALID_SOCKET))
 		return false;
@@ -161,14 +161,14 @@ BOOL IOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
 }
 
 
-BOOL IOCP::GetCompletionStatus(LPDWORD pdwOutBytesTransferred, ULONG_PTR * pOutCompletionKey, WSAOVERLAPPED ** pOutOverlapped, int * pErrCode, DWORD dwWaitingTime)
+BOOL SIOCP::GetCompletionStatus(LPDWORD pdwOutBytesTransferred, ULONG_PTR * pOutCompletionKey, WSAOVERLAPPED ** pOutOverlapped, int * pErrCode, DWORD dwWaitingTime)
 {
 	BOOL result = GetQueuedCompletionStatus(m_handle, pdwOutBytesTransferred, pOutCompletionKey, pOutOverlapped, dwWaitingTime);
 
 	return result;
 }
 
-BOOL IOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, WSAOVERLAPPED * pOverlapped)
+BOOL SIOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, WSAOVERLAPPED * pOverlapped)
 {
 	BOOL result = PostQueuedCompletionStatus(m_handle, CompleitonKey, dwBytesTransferred, pOverlapped);
 
@@ -189,7 +189,7 @@ BOOL IOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, W
 
 unsigned WINAPI Accept(LPVOID pAcceptOL)
 {
-	IOCP* pIocp = (IOCP*)pAcceptOL;
+	SIOCP* pIocp = (SIOCP*)pAcceptOL;
 
 	SSocket accept_socket;
 	SOCKET client_socket;
@@ -271,7 +271,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 
 unsigned WINAPI WorkThread(LPVOID pOL)
 {
-	IOCP* pIocp = (IOCP*)pOL;
+	SIOCP* pIocp = (SIOCP*)pOL;
 	DWORD DwNumberBytes = 0;
 	SPeer* pCompletionKey = NULL;
 	IO_OVERLAPPED* pOverlapped = NULL;
@@ -292,7 +292,7 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 			{
 				pIocp->m_ThreadDisconnect(pCompletionKey);
 				pIocp->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
-				GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
+				GameMessageManager::GetInstance()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			}
 
 			continue;
