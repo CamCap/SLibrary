@@ -21,9 +21,8 @@ public:
 	template <typename process_function, typename... Args>
 	void process(process_function pf, Args... arg);
 
-	template <typename process_function>
-	void process(process_function pf);
-
+//	template <typename process_function>
+//	void process(process_function pf);
 
 protected:
 	int		m_count; //size
@@ -137,18 +136,18 @@ inline void VecContainer<_Ty>::process(process_function pf, Args... arg)
 	}
 }
 
-
-template<class _Ty>
-template<typename process_function>
-inline void VecContainer<_Ty>::process(process_function pf)
-{
-	typename std::vector<_Ty*>::iterator it = this->m_pVec.begin();
-
-	for (it; it != this->m_pVec.end(); it++)
-	{
-		pf(*it);
-	}
-}
+//
+//template<class _Ty>
+//template<typename process_function>
+//inline void VecContainer<_Ty>::process(process_function pf)
+//{
+//	typename std::vector<_Ty*>::iterator it = this->m_pVec.begin();
+//
+//	for (it; it != this->m_pVec.end(); it++)
+//	{
+//		pf(*it);
+//	}
+//}
 
 //////////////////////////////////////////////////
 template <class _Ty>
