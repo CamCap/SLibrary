@@ -12,8 +12,9 @@ public:
 	VecContainer(int size);
 	virtual ~VecContainer();
 
-	void push(_Ty *pElement);
+	void push(_Ty* pElement);
 	_Ty* pop();
+	void Erase(_Ty* pElement);
 
 	template <typename find_function>
 	constexpr _Ty* find(find_function ty);
@@ -103,6 +104,17 @@ _Ty* VecContainer<_Ty>::pop()
 	}
 
 	return pElement;
+}
+
+////////////////////////////////////////////////////////////////////
+
+template <class _Ty>
+void VecContainer<_Ty>::Erase(_Ty* pElement)
+{
+	CSLOCK(this->m_cs) {
+		typename std::vector<_Ty*>::iterator it = std::find(this->m_pVec.begin(), this->m_pVec.end(), pElement);
+		this->m_pVec.erase(it);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////
