@@ -54,10 +54,10 @@
     <ClInclude Include="SPeerContainer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="MySqlManager.h">
+    <ClInclude Include="SMySqlManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="DBManager.h">
+    <ClInclude Include="SDBManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,10 +83,10 @@
     <ClCompile Include="SDlg.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="MySqlManager.cpp">
+    <ClCompile Include="SDBManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="DBManager.cpp">
+    <ClCompile Include="SMySqlManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
