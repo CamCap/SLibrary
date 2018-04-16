@@ -48,7 +48,7 @@ public:
 
 		m_tickPing = tick;
 
-		m_vecActivePeer.process([&](T* peer)->void { dynamic_cast<SServer*>(peer)->OnPingCheck(tick); });
+		m_vecActivePeer.process([&](T* peer)->void { reinterpret_cast<SServer*>(peer)->OnPingCheck(tick); });
 	}
 
 	template <typename process_function, typename... Args>

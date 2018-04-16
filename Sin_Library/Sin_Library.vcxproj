@@ -81,6 +81,8 @@
     <OutDir>$(SolutionDir)\LIB\LIB64\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\</IntDir>
     <TargetName>$(ProjectName)_64</TargetName>
+    <IncludePath>C:\mysql\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\mysql\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -158,6 +160,8 @@
   <ItemGroup>
     <ClInclude Include="Container.h" />
     <ClInclude Include="CriticalSection.h" />
+    <ClInclude Include="DBManager.h" />
+    <ClInclude Include="MySqlManager.h" />
     <ClInclude Include="SDlg.h" />
     <ClInclude Include="GameMessage.h" />
     <ClInclude Include="header.h" />
@@ -171,6 +175,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DBManager.cpp" />
+    <ClCompile Include="MySqlManager.cpp" />
     <ClCompile Include="SDlg.cpp" />
     <ClCompile Include="GameMessage.cpp" />
     <ClCompile Include="SIOCP.cpp" />
