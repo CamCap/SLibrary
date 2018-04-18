@@ -6,10 +6,13 @@
 
 #define MAX_SQL_LIST 10
 
+#define MAX_QUERY_BUFF_SIZE 1500 
+
 struct BTZ_SQL
 {
 	DWORD sql_id;
-	short sql_size;
+//	short sql_size;
+	char query[MAX_QUERY_BUFF_SIZE];
 };
 
 class SDBManager
@@ -30,8 +33,9 @@ public:
 	void PushWaitSql(BTZ_SQL* sql) { m_vecDBMsg.push(sql); }
 	BTZ_SQL* PopWaitSql() { return m_vecDBMsg.pop(); }
 
-
 	BTZ_SQL* PopEchoSql() { return m_vecDBMsgEcho.pop(); }
+
+
 private:
 	VecContainer<BTZ_SQL> m_vecDBMsgContainer; // 전체 컨테이너
 	VecContainer<BTZ_SQL> m_vecDBMsg; // 대기중인 컨테이너

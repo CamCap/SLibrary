@@ -143,7 +143,7 @@ protected:
 	char recv_buffer[USER_BUFFER_SIZE];
 
 	SPacketContainer m_vecSendPacket; // 보내는 패킷 벡터
-	SPacketContainer m_vecStandPacket; // 사용대기중인 패킷 벡터
+//	SPacketContainer m_vecStandPacket; // 사용대기중인 패킷 벡터
 
 	SCriticalSection m_cs;
 

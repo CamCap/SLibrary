@@ -42,6 +42,11 @@ public:
 		return pElement;
 	}
 	
+	template<class find_function>
+	T* Find(find_function f){
+		return m_vecActivePeer.find(f);
+	}
+
 	void PingCheck(DWORD tick) {
 		if (tick - m_tickPing < PING_CHECK_TIME)
 			return;
@@ -50,6 +55,7 @@ public:
 
 		m_vecActivePeer.process([&](T* peer)->void { reinterpret_cast<SServer*>(peer)->OnPingCheck(tick); });
 	}
+
 
 	template <typename process_function, typename... Args>
 	void process(process_function pf, Args... arg)

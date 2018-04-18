@@ -57,7 +57,7 @@ VecContainer<_Ty>::~VecContainer()
 	_Ty *p;
 	while (m_pVec.size() > 0)
 	{
-		p = *m_pVec.end();
+		p = m_pVec.back();
 		SAFE_DELETE(p);
 
 		m_pVec.pop_back();
@@ -91,7 +91,7 @@ _Ty* VecContainer<_Ty>::pop()
 	{
 		if (m_pVec.size() > 0)
 		{
-			pElement = *m_pVec.end();
+			pElement = m_pVec.back();
 			if (pElement != NULL)
 				m_pVec.pop_back();
 			else

@@ -24,7 +24,7 @@ SIOCP::~SIOCP()
 }
 
 
-BOOL SIOCP::CreateIOCP()
+bool SIOCP::CreateIOCP()
 {
 	WSADATA             wsaData;
 
@@ -97,7 +97,7 @@ void SIOCP::CleanUp()
 	WSACleanup();
 }
 
-BOOL SIOCP::CreateIOCPThread()
+bool SIOCP::CreateIOCPThread()
 {
 	//	if (m_ThreadAccept == NULL || m_ThreadWork == NULL) return false;
 
@@ -130,7 +130,7 @@ BOOL SIOCP::CreateIOCPThread()
 	return true;
 }
 
-BOOL SIOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
+bool SIOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
 {
 	if ((context == NULL) || (socket == INVALID_SOCKET))
 		return false;
@@ -161,14 +161,14 @@ BOOL SIOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
 }
 
 
-BOOL SIOCP::GetCompletionStatus(LPDWORD pdwOutBytesTransferred, ULONG_PTR * pOutCompletionKey, WSAOVERLAPPED ** pOutOverlapped, int * pErrCode, DWORD dwWaitingTime)
+bool SIOCP::GetCompletionStatus(LPDWORD pdwOutBytesTransferred, ULONG_PTR * pOutCompletionKey, WSAOVERLAPPED ** pOutOverlapped, int * pErrCode, DWORD dwWaitingTime)
 {
 	BOOL result = GetQueuedCompletionStatus(m_handle, pdwOutBytesTransferred, pOutCompletionKey, pOutOverlapped, dwWaitingTime);
 
 	return result;
 }
 
-BOOL SIOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, WSAOVERLAPPED * pOverlapped)
+bool SIOCP::PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred, WSAOVERLAPPED * pOverlapped)
 {
 	BOOL result = PostQueuedCompletionStatus(m_handle, CompleitonKey, dwBytesTransferred, pOverlapped);
 

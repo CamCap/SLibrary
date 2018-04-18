@@ -83,26 +83,20 @@ void SCircleQueue::InitQueue()
 SPacketContainer::SPacketContainer()
 	: m_VecSize(BTZ_PACKET_LENGTH)
 {
-	BTZPacket* packet = NULL;
-
-	for (int i = 0; i < m_VecSize; i++)
-	{
-		packet = new BTZPacket;
-		m_VecPacket.push_back(packet);
-	}
 }
 
-SPacketContainer::SPacketContainer(int size)
-	: m_VecSize(size)
-{
-	BTZPacket* packet = NULL;
-
-	for (int i = 0; i < m_VecSize; i++)
-	{
-		packet = new BTZPacket;
-		m_VecPacket.push_back(packet);
-	}
-}
+//
+//SPacketContainer::SPacketContainer(int size)
+//	: m_VecSize(size)
+//{
+//	BTZPacket* packet = NULL;
+//
+//	for (int i = 0; i < m_VecSize; i++)
+//	{
+//	//	packet = new BTZPacket;
+//		m_VecPacket.push_back(packet);
+//	}
+//}
 
 SPacketContainer::~SPacketContainer()
 {
@@ -120,8 +114,11 @@ bool SPacketContainer::Push(IN BTZPacket* data)
 {
 	if (data == NULL) return false;
 
-	m_VecPacket.reserve(m_VecSize);
-	m_VecPacket.push_back(data);
+	CSLOCK(m_cs)
+	{
+		m_VecPacket.reserve(m_VecSize);
+		m_VecPacket.push_back(data);
+	}
 
 	return true;
 }
@@ -131,9 +128,11 @@ void SPacketContainer::Pop(OUT BTZPacket* data)
 	//data = m_VecPacket.front();
 	if (m_VecPacket.size() == 0) return;
 
-	std::vector<BTZPacket*>::iterator it = m_VecPacket.begin();
-	m_VecPacket.reserve(m_VecSize);
-	m_VecPacket.erase(it);
-
-	data = *it;
+	CSLOCK(m_cs)
+	{
+		std::vector<BTZPacket*>::iterator it = m_VecPacket.begin();
+		m_VecPacket.reserve(m_VecSize);
+		m_VecPacket.erase(it);
+		data = *it;
+	}
 }

@@ -3,7 +3,7 @@
 
 
 SDBManager::SDBManager()
-	:m_vecDBMsg(MAX_SQL_LIST), m_vecDBMsgContainer(MAX_SQL_LIST), m_vecDBMsgEcho(10)
+	:m_vecDBMsg(MAX_SQL_LIST), m_vecDBMsgContainer(MAX_SQL_LIST), m_vecDBMsgEcho(MAX_SQL_LIST)
 {
 	this->m_sqlManager.AllocateHandle();
 }

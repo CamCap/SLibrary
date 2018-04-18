@@ -156,7 +156,7 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 
 
 SPeer::SPeer()
-	:m_vecSendPacket(0), m_vecStandPacket(), m_session()
+	:m_vecSendPacket(), m_session()
 {
 }
 
@@ -168,19 +168,7 @@ SPeer::~SPeer()
 
 void SPeer::Send(BTZPacket* packet)
 {
-	BTZPacket* sendpacket = NULL;
-
-	m_vecStandPacket.Pop(sendpacket);
-
-	if (sendpacket == NULL)
-	{
-		SUSERSTATEToString(ERROR_SENDPACKET_NULL);
-		return;
-	}
-
-	memcpy(sendpacket, packet, sizeof(*packet));
-
-	m_vecSendPacket.Push(sendpacket);
+	m_vecSendPacket.Push(packet);
 
 	//m_session.Send((char*)sendpacket, sendpacket->packet_size);
 	CheckSendPacket();
@@ -213,11 +201,12 @@ void SPeer::CheckSendPacket()
 			//에러제어
 			ErrorHandle(__FUNCTION__);
 		}
+		SAFE_DELETE(sendpacket);
 	}
 	else
 	{
 		m_session.SendComplete();
-		SSession::SESSIONSTATEToString(SSession::SEND_COMPLETE);
+//		SSession::SESSIONSTATEToString(SSession::SEND_COMPLETE);
 	}
 }
 

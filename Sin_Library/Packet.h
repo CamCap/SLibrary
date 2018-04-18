@@ -3,6 +3,7 @@
 #define _SDATA_H_ 
 
 #include "header.h"
+#include "CriticalSection.h"
 #include <vector>
 
 #define IN
@@ -72,15 +73,17 @@ class SPacketContainer
 {
 public:
 	explicit SPacketContainer();
-	explicit SPacketContainer(int size);
+//	explicit SPacketContainer(int size);
 	~SPacketContainer();
 
 	bool Push(IN BTZPacket* data);
+
 	void Pop(OUT BTZPacket* data);
 
 private:
 	std::vector<BTZPacket*> m_VecPacket;
 	int m_VecSize;
+	SCriticalSection m_cs;
 };
 
 #endif
