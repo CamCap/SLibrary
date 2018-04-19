@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "SMySqlManager.h"
-
+#include <list>
 
 SMySqlManager::SMySqlManager()
 {
@@ -135,50 +135,24 @@ void SMySqlManager::ExecuteStatement()
 		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
 #endif
 	}
-
 }
 
-
-bool SMySqlManager::RetrieveResult()
+struct _pair
 {
-	short choco_id;
-	char choco_name[16];
-	float choco_cal;
-	SQLLEN cid, cna, cal;
-	int result = 0;
 
-	SQLRowCount(m_hStmt, &m_numRow);
-	SQLNumResultCols(m_hStmt, &m_numCol);
-	
-	if (m_numCol > MAX_COLUMN)
-	{
-		return false;
-	}
+};
 
-	if (m_numCol == 0)
-	{
-		SQLCloseCursor(m_hStmt);
-		SQLFreeStmt(m_hStmt, SQL_UNBIND);
-		return TRUE;
-	}
+template <class... Args>
+void PushArg(Args... arg)
+{
+//	std::list<
+}
 
-	for (int i = 0; i < m_numCol; i++)
-	{
-		SQLBindCol(m_hStmt, i + 1, SQL_C_CHAR, m_col[i], MAX_COLUMN_SIZE, &m_stateCol[i]);
-		SQLDescribeCol(m_hStmt, i + 1, m_colName[i], MAX_COLUMN_NAME, NULL, NULL, NULL, NULL, NULL);
-	}
-
-	result = SQLFetch(m_hStmt);
-
-	if (m_ret == SQL_NO_DATA)
-	{
-		SQLCloseCursor(m_hStmt);
-		SQLFreeStmt(m_hStmt, SQL_UNBIND);
-		return FALSE;
-	}
-
-	return true;
-//	SQLFreeStmt(m_hStmt, SQL_UNBIND);
+template <class... Args>
+bool SMySqlManager::RetrieveResult(Args... arg)
+{
+	list컨테이너에 쫙 집어넣고..하나씩 빼서..타입검사를 한다?
+	switch로 맞는 타입별 bindcol을 실행?
 }
 
 void SMySqlManager::DisconnectDataSource()

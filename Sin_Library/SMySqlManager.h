@@ -22,7 +22,8 @@ public:
 	void PrepareStatement(SQLWCHAR* sql); // 쿼리 실행을 위한 준비
 	void ExecuteStatement(); // 실행준비된 쿼리를 실행
 	
-	bool RetrieveResult(); // 결과 리턴
+	template <class... Args>
+	bool RetrieveResult(Args... arg); // 결과 리턴
 	
 	void DisconnectDataSource(); // 할당했던 핸들을 해제
 

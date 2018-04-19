@@ -3,6 +3,7 @@
 #include "SMySqlManager.h"
 #include "Container.h"
 #include <functional>
+#include <thread>
 
 #define MAX_SQL_LIST 10
 
@@ -17,6 +18,8 @@ struct BTZ_SQL
 
 class SDBManager
 {
+//	using namespace std::thread;
+
 public:
 	SDBManager();
 	~SDBManager();
@@ -25,7 +28,7 @@ public:
 	//void DBProcess(BTZ_SQL* sql, DWORD wParam, DWORD lParam);
 	std::function<void(BTZ_SQL*, DWORD, DWORD) > m_dbProcess;
 
-	static DWORD WINAPI DBProcedure(void* pArg);
+	void DBProcedure();
 
 	void PushBtzSql(BTZ_SQL* sql) { m_vecDBMsgContainer.push(sql); }
 	BTZ_SQL* PopBtzSql() { return m_vecDBMsgContainer.pop(); }
@@ -35,6 +38,13 @@ public:
 
 	BTZ_SQL* PopEchoSql() { return m_vecDBMsgEcho.pop(); }
 
+	char* GetResultStr() {}
+
+private:
+	void Exec(BTZ_SQL* sql) { m_sqlManager.ExecuteStatementDirect((SQLWCHAR*)sql->query);
+		m_sqlManager.RetrieveResult();
+	}
+
 
 private:
 	VecContainer<BTZ_SQL> m_vecDBMsgContainer; // 전체 컨테이너
@@ -43,6 +53,6 @@ private:
 
 	SMySqlManager m_sqlManager;
 
-	HANDLE m_threadHandle;
+	std::thread m_threadHandle;
 };
 

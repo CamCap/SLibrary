@@ -12,7 +12,7 @@ SDBManager::SDBManager()
 SDBManager::~SDBManager()
 {
 	this->m_sqlManager.DisconnectDataSource();
-	CloseHandle(m_threadHandle);
+	m_threadHandle.detach();
 }
 
 bool SDBManager::ConnectDBMS(const char* ip, const char* id, const char* pw)
@@ -22,7 +22,7 @@ bool SDBManager::ConnectDBMS(const char* ip, const char* id, const char* pw)
 		return false;
 	}
 
-	m_threadHandle = CreateThread(NULL, 0, DBProcedure, (void*)this, 0, NULL);
+	m_threadHandle = std::thread([&]() {this->DBProcedure(); });
 
 	return true;
 }
@@ -36,20 +36,21 @@ bool SDBManager::ConnectDBMS(const char* ip, const char* id, const char* pw)
 //	}
 //}
 
-DWORD WINAPI SDBManager::DBProcedure(void* pArg)
+void SDBManager::DBProcedure()
 {
-	SDBManager* db = (SDBManager*)pArg;
+//	SDBManager* db = (SDBManager*)pArg;
 
 	while (true)
 	{
-		BTZ_SQL* sql = db->PopWaitSql();
+		BTZ_SQL* sql = PopWaitSql();
 
 		if (sql == NULL) continue;
-		if (db->m_dbProcess == NULL) {
-			db->PushWaitSql(sql);
+		if (m_dbProcess == NULL) {
+			PushWaitSql(sql);
 			continue;
 		}
-		db->m_dbProcess(sql, NULL, NULL);
-		db->PushBtzSql(sql);
+		Exec(sql);
+		m_dbProcess(sql, NULL, NULL);
+		PushBtzSql(sql);
 	}
 }
