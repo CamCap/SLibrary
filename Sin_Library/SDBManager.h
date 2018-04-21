@@ -40,9 +40,10 @@ public:
 
 	char* GetResultStr() {}
 
-private:
-	void Exec(BTZ_SQL* sql) { m_sqlManager.ExecuteStatementDirect((SQLWCHAR*)sql->query);
-		m_sqlManager.RetrieveResult();
+public:
+	template <class... args>
+	void Exec(BTZ_SQL* sql, args... Arg) { m_sqlManager.ExecuteStatementDirect((SQLWCHAR*)sql->query);
+		m_sqlManager.RetrieveResult(Arg...);
 	}
 
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SMySqlManager.h"
 #include <list>
+#include "STuple.h"
 
 SMySqlManager::SMySqlManager()
 {
@@ -137,22 +138,13 @@ void SMySqlManager::ExecuteStatement()
 	}
 }
 
-struct _pair
-{
-
-};
-
-template <class... Args>
-void PushArg(Args... arg)
-{
-//	std::list<
-}
-
 template <class... Args>
 bool SMySqlManager::RetrieveResult(Args... arg)
 {
-	list컨테이너에 쫙 집어넣고..하나씩 빼서..타입검사를 한다?
-	switch로 맞는 타입별 bindcol을 실행?
+	//list컨테이너에 쫙 집어넣고..하나씩 빼서..타입검사를 한다?
+	//switch로 맞는 타입별 bindcol을 실행?
+	xtuple<Args...> tuple(arg...);
+	tuple
 }
 
 void SMySqlManager::DisconnectDataSource()
