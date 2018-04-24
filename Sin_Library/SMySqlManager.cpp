@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "SMySqlManager.h"
 #include <list>
-#include "STuple.h"
+#include "Log.h"
+#include <comdef.h> 
 
 SMySqlManager::SMySqlManager()
 {
@@ -35,6 +36,9 @@ void SMySqlManager::AllocateHandle()
 			{
 #ifdef _DEBUG
 				SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
+				_bstr_t bstr(m_message);
+				const char* message = bstr;
+				ERROR_LOG(message);
 #endif
 			}
 		}
@@ -42,6 +46,9 @@ void SMySqlManager::AllocateHandle()
 		{
 #ifdef _DEBUG
 			SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
+			_bstr_t bstr(m_message);
+			const char* message = bstr;
+			ERROR_LOG(message); 
 #endif
 		}
 	}
@@ -49,8 +56,13 @@ void SMySqlManager::AllocateHandle()
 	{
 #ifdef _DEBUG
 		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
+		_bstr_t bstr(m_message);
+		const char* message = bstr;
+		ERROR_LOG(message);
 #endif
 	}
+
+
 }
 
 bool SMySqlManager::ConnectDataSource(SQLWCHAR* _dns, SQLWCHAR* _id, SQLWCHAR* _pw)
@@ -59,29 +71,39 @@ bool SMySqlManager::ConnectDataSource(SQLWCHAR* _dns, SQLWCHAR* _id, SQLWCHAR* _
 
 	if (result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO)
 	{
-
 	}
 	else
 	{
+#ifdef _DEBUG
+		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
+		_bstr_t bstr(m_message);
+		const char* message = bstr;
+		ERROR_LOG(message);
+#endif
 		return false;
 	}
-	return true;
-}
 
-void SMySqlManager::ExecuteStatementDirect(SQLWCHAR* sql) 
-{
-	int result = 0;
 	result = SQLAllocHandle(SQL_HANDLE_STMT, m_hDbc, &m_hStmt);
-	
+
 	if (result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO)
 	{
 	}
 	else {
 #ifdef _DEBUG
 		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
+		_bstr_t bstr(m_message);
+		const char* message = bstr;
+		ERROR_LOG(message);
 #endif
+		return false;
 	}
 
+	return true;
+}
+
+int SMySqlManager::ExecuteStatementDirect(SQLWCHAR* sql, ResSql& res_sql)
+{
+	int result = 0;
 
 	result = SQLExecDirect(m_hStmt, sql, SQL_NTS);
 	
@@ -89,63 +111,72 @@ void SMySqlManager::ExecuteStatementDirect(SQLWCHAR* sql)
 
 	}
 	else {
-#ifdef _DEBUG
 		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
-#endif
+		//memcpy(res_sql.m_message, m_message, sizeof(m_message));
+		res_sql.m_state = OVERLAP_VALUE;
+		return result;
 	}
 
-}
+	SQLRowCount(m_hStmt, &m_numRow);
+	SQLNumResultCols(m_hStmt, &m_numCol);
 
-void SMySqlManager::PrepareStatement(SQLWCHAR * sql)
-{
-	int result = 0;
-	result = SQLAllocHandle(SQL_HANDLE_STMT, m_hDbc, &m_hStmt);
-	
-	if (result == SQL_SUCCESS || result == SQL_SUCCESS_WITH_INFO)
+	if (m_numCol > MAX_COLUMN)
 	{
+		wcscpy_s(m_message, L"최대 칼럼수를 초과");	
+		//memcpy(res_sql.m_message, m_message, sizeof(m_message));
+		res_sql.m_state = MAX_OVER;
+		return false;
 	}
-	else {
-#ifdef _DEBUG
-		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
-#endif
-	}
 
-
-	result = SQLPrepare(m_hStmt, sql, SQL_NTS);
-
-
-	if (result == SQL_SUCCESS) {
-
-	}
-	else {
-#ifdef _DEBUG
-		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
-#endif
-	}
-}
-
-void SMySqlManager::ExecuteStatement() 
-{
-	int result = SQLExecute(m_hStmt);
-
-	if (result == SQL_SUCCESS) {
-	}
-	else 
+	if (m_numCol == 0 || m_numRow == 0)
 	{
-#ifdef _DEBUG
-		SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
-#endif
+		Clear();
+		res_sql.m_state = NON_VALUE;
+		//SQLGetDiagRec(SQL_HANDLE_DBC, m_hDbc, ++rec, m_state, &native, m_message, sizeof(m_message), &m_length);
+		return false;
 	}
+
+	for (int i = 0; i < m_numCol; i++)
+	{
+		SQLBindCol(m_hStmt, i + 1, SQL_C_CHAR, m_col[i], MAX_COLUMN_SIZE, &m_stateCol[i]);
+		SQLDescribeCol(m_hStmt, i + 1, m_colName[i], MAX_COLUMN_NAME, NULL, NULL, NULL, NULL, NULL);
+	}
+
+	if (!Fetch())
+	{
+		Clear();
+		return false;
+	}
+
+	res_sql.m_state = SUCESS;
+	memcpy(res_sql.m_col, m_col, sizeof(char[MAX_COLUMN][MAX_COLUMN_SIZE]));
+
+	return true;
 }
 
-template <class... Args>
-bool SMySqlManager::RetrieveResult(Args... arg)
+bool SMySqlManager::Fetch()
 {
-	//list컨테이너에 쫙 집어넣고..하나씩 빼서..타입검사를 한다?
-	//switch로 맞는 타입별 bindcol을 실행?
-	xtuple<Args...> tuple(arg...);
-	tuple
+	int result = SQLFetch(m_hStmt);
+
+	if (m_ret == SQL_NO_DATA) return FALSE;
+
+	return TRUE;
 }
+
+void SMySqlManager::Clear()
+{
+	SQLCloseCursor(m_hStmt);
+	SQLFreeStmt(m_hStmt, SQL_UNBIND);
+}
+
+//
+//template <class... Args>
+//constexpr TemplateClass<Args...> SMySqlManager::RetrieveResult(Args... arg)
+//{
+//	TemplateClass<Args...> m_temp;	
+//	
+//
+//}
 
 void SMySqlManager::DisconnectDataSource()
 {

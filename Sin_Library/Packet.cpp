@@ -38,24 +38,25 @@ bool SCircleQueue::Push(IN char * data, IN short size)
 }
 
 
-void SCircleQueue::Pop(OUT BTZPacket * data)
+BTZPacket* SCircleQueue::Pop()
 {
+	if (m_tail == m_front) return NULL;
+
 	BTZPacket* packet = NULL;
 	int packetsize = 0;
 	int size = m_front - m_tail;
 
-	packet = ((BTZPacket*)&m_data[m_front]);
+	packet = ((BTZPacket*)&m_data[m_tail]);
 	packetsize = packet->packet_size;
 
-	if (packetsize < sizeof(BTZPacket)) return;
-	if (size < packetsize) return;
-
+	if (packetsize < sizeof(BTZPacket)) return NULL;
+	if (size < packetsize) return NULL;
 	//	m_tail += packetsize;
 
 	int pre = m_tail;
 	m_tail += packetsize;
 
-	data = packet;
+	return packet;
 }
 
 //front가 max_queue_length를 넘으려고 할 때, 큐를 초기화
@@ -123,16 +124,20 @@ bool SPacketContainer::Push(IN BTZPacket* data)
 	return true;
 }
 
-void SPacketContainer::Pop(OUT BTZPacket* data)
+BTZPacket* SPacketContainer::Pop()
 {
 	//data = m_VecPacket.front();
-	if (m_VecPacket.size() == 0) return;
+	if (m_VecPacket.size() == 0) return NULL;
+
+	BTZPacket* data = NULL;
 
 	CSLOCK(m_cs)
 	{
+
 		std::vector<BTZPacket*>::iterator it = m_VecPacket.begin();
 		m_VecPacket.reserve(m_VecSize);
-		m_VecPacket.erase(it);
 		data = *it;
+		m_VecPacket.erase(it);
 	}
+	return data;
 }

@@ -129,10 +129,6 @@ GameMSG * GameMessageManager::PopMsg()
 {
 	GameMSG* msg = NULL;
 
-
-	//	Lock();
-	//	SCOPE_EXIT({ UnLock(); });
-
 	while (1)
 	{
 		if (m_msg.size() > 0)

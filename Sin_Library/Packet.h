@@ -10,9 +10,11 @@
 #define OUT
 
 ///////////////
-#pragma pack(push, 1)
 
 typedef unsigned long DWORD;
+
+#pragma pack(push, 1)
+
 
 struct BTZPacket
 {
@@ -55,7 +57,7 @@ public:
 
 public:
 	bool Push(IN char* data, IN short size);
-	void Pop(OUT BTZPacket* data);
+	BTZPacket* Pop();
 
 private:
 	void InitQueue();
@@ -78,7 +80,7 @@ public:
 
 	bool Push(IN BTZPacket* data);
 
-	void Pop(OUT BTZPacket* data);
+	BTZPacket* Pop();
 
 private:
 	std::vector<BTZPacket*> m_VecPacket;

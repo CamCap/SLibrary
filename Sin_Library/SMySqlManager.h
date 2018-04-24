@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <sql.h>
 #include <sqlext.h>
+#include "header.h"
 
 #pragma comment(lib,"libmysql.lib")
 #pragma comment(lib,"odbc32.lib")
@@ -11,21 +12,32 @@
 #define MAX_COLUMN_NAME 50
 #define MAX_COLUMN_SIZE 255
 
+struct ResSql
+{
+	int m_state;
+	char m_col[MAX_COLUMN][MAX_COLUMN_SIZE];
+};
+
 class SMySqlManager
 {
 public:
+	DECLARE_ENUM(RES_ENUM,
+		SUCESS, //정상적으로 실행됨
+		NON_VALUE, // select했으나 값이 없음
+		MAX_OVER, // 최대 칼럼값을 초과
+		OVERLAP_VALUE
+	);
+
+public:
 	void AllocateHandle(); // 핸들변수 초기화
 	bool ConnectDataSource(SQLWCHAR* _dns, SQLWCHAR* _id, SQLWCHAR* _pw); // DBMS에 접속
-	
-	void ExecuteStatementDirect(SQLWCHAR* sql); // 준비과정없이 바로 실행
-	
-	void PrepareStatement(SQLWCHAR* sql); // 쿼리 실행을 위한 준비
-	void ExecuteStatement(); // 실행준비된 쿼리를 실행
-	
-	template <class... Args>
-	bool RetrieveResult(Args... arg); // 결과 리턴
-	
+	int ExecuteStatementDirect(SQLWCHAR* sql, ResSql& res_sql); // 준비과정없이 바로 실행
 	void DisconnectDataSource(); // 할당했던 핸들을 해제
+
+
+private:
+	void Clear();
+	bool Fetch();
 
 public:
 	SMySqlManager();
@@ -49,6 +61,5 @@ private:
 	SQLSMALLINT	  m_length;
 
 	char         m_col[MAX_COLUMN][MAX_COLUMN_SIZE];
-	BOOL         m_IsConnect;
+	//BOOL         m_IsConnect;
 };
-

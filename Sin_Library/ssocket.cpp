@@ -156,7 +156,7 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 
 
 SPeer::SPeer()
-	:m_vecSendPacket(), m_session()
+	:m_vecSendPacket(), m_session(), m_id(-1)
 {
 }
 
@@ -189,7 +189,7 @@ void SPeer::Recv()
 void SPeer::CheckSendPacket()
 {
 	BTZPacket* sendpacket = NULL;
-	m_vecSendPacket.Pop(sendpacket);
+	sendpacket = m_vecSendPacket.Pop();
 
 	if (sendpacket != NULL)
 	{
@@ -201,7 +201,7 @@ void SPeer::CheckSendPacket()
 			//에러제어
 			ErrorHandle(__FUNCTION__);
 		}
-		SAFE_DELETE(sendpacket);
+	//	SAFE_DELETE(sendpacket);
 	}
 	else
 	{
@@ -239,11 +239,11 @@ BOOL SPeer::RecvPacket(int size)
 
 		while (true)
 		{
-			m_queue.Pop(packet);
+			packet = m_queue.Pop();
 
 			if (packet == NULL) break;
 
-			GameMessageManager::GetInstance()->SendGameMessage(GM_PKTRECEIVE, (DWORD)this, 0, (char*)packet);
+			GameMessageManager::GetInstance()->SendGameMessage(GM_PKTRECEIVE, size, 0, (char*)packet);
 			m_packetProcess(packet);
 		}
 	}
@@ -275,9 +275,8 @@ void SServer::SetName(std::string name)
 
 
 SServer::SServer()
-	:m_pingCheckTime(PING_CHECK_TIME)
+	:m_pingCheckTime(PING_CHECK_TIME), SPeer()
 {
-	m_id = -1;
 }
 
 
@@ -285,7 +284,7 @@ SServer::~SServer()
 {
 }
 
-
+//클라에서 받는 핑 시간으로 체크
 void SServer::OnPingCheck(DWORD tick)
 {
 	if (tick - m_tickPing >= PING_CHECK_TIME) // 시간초과

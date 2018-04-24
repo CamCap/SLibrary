@@ -1,7 +1,7 @@
 #pragma once
 #include "SPeerContainer.h"
 
-#define MAX_WORKER_THREAD 100
+#define MAX_WORKER_THREAD 50
 #define ListenQueue 10
 #define USER_ID_INDEX 1
 

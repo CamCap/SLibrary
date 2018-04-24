@@ -299,7 +299,7 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		}
 
 		//이미 연결이 끊김
-		if ((pCompletionKey == NULL) || (pCompletionKey->GetId() == -100)) continue;
+		if ((pCompletionKey == NULL) || (pCompletionKey->GetId() == 0)) continue;
 
 		//클라가 연결을 끊음
 		if (DwNumberBytes == 0)

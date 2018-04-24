@@ -68,8 +68,8 @@ public:
 	~SPeerContainer() {}
 
 private:
-	VecContainer<T> m_vecWaitPeer; // 미사용 서버
-	VecContainer<T> m_vecActivePeer; // 사용중 서버
+	VecContainer<T> m_vecWaitPeer; // 미사용 
+	VecContainer<T> m_vecActivePeer; // 사용중 
 
 	DWORD m_tickPing;
 };
