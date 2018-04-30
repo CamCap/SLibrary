@@ -46,13 +46,12 @@ public:
 private:
 	SQLHENV      m_hEnv; // 환경 핸들
 	SQLHDBC      m_hDbc;
-	SQLRETURN    m_ret;
 
 	SQLHSTMT      m_hStmt;
 	SQLLEN		  m_numRow;
 	SQLSMALLINT   m_numCol;
 	SQLWCHAR       m_colName[MAX_COLUMN][MAX_COLUMN_NAME];
-	SQLLEN    m_stateCol[MAX_COLUMN];
+	SQLLEN		 m_stateCol[MAX_COLUMN];
 
 	SQLINTEGER	  rec;
 	SQLINTEGER	  native;

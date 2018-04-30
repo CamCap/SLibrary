@@ -36,9 +36,9 @@ private:
 public:
 	static DWORD g_userID;
 
-	IOCPAccept m_ThreadAccept;
-	IOCPWork m_ThreadWork;
-	IOCPDisconnect m_ThreadDisconnect;
+	IOCPAccept m_RoutinueAccept;
+	IOCPWork m_RoutinueWork;
+	IOCPDisconnect m_RoutinueDisconnect;
 
 protected:
 	SCriticalSection m_cs;

@@ -73,7 +73,7 @@ void SSession::InitSession(SOCKET socket, SOCKADDR_IN addr, char* recvbuffer, in
 	m_socket.InitSocket(socket, addr);
 }
 
-void SSession::CloseSocket()
+void SSession::ReleaseSession()
 {
 	//	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
 
@@ -162,7 +162,7 @@ SPeer::SPeer()
 
 SPeer::~SPeer()
 {
-	m_session.CloseSocket();
+	m_session.ReleaseSession();
 }
 
 
@@ -212,7 +212,7 @@ void SPeer::CheckSendPacket()
 
 void SPeer::ReleaseSocket()
 {
-	m_session.CloseSocket();
+	m_session.ReleaseSession();
 }
 
 bool SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
@@ -275,7 +275,7 @@ void SServer::SetName(std::string name)
 
 
 SServer::SServer()
-	:m_pingCheckTime(PING_CHECK_TIME), SPeer()
+	: SPeer()
 {
 }
 

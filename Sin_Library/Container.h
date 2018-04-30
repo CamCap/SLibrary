@@ -6,22 +6,27 @@
 #include "CriticalSection.h"
 #include <algorithm>
 
-template <class _container, class _Ty>
+template <class _Ty>
 class Container
 {
 public:
+	virtual void push(_Ty*) = 0;
+	virtual _Ty* pop() = 0;
+	virtual void Erase(_Ty*) = 0;
+
 };
 
 template <class _Ty>
 class VecContainer
+	:public Container<_Ty>
 {
 public:
 	VecContainer(int size);
 	virtual ~VecContainer();
 
-	void push(_Ty* pElement);
-	_Ty* pop();
-	void Erase(_Ty* pElement);
+	virtual void push(_Ty* pElement);
+	virtual _Ty* pop();
+	virtual void Erase(_Ty* pElement);
 
 	template <typename find_function>
 	constexpr _Ty* find(find_function ty);
@@ -163,14 +168,15 @@ inline void VecContainer<_Ty>::process(process_function pf, Args... arg)
 
 template <class _Ty>
 class ListContainer
+	:public Container<_Ty>
 {
 public:
 	ListContainer(int size);
 	virtual ~ListContainer();
 
-	void push(_Ty* pElement);
-	_Ty* pop();
-	void Erase(_Ty* pElement);
+	virtual void push(_Ty* pElement);
+	virtual _Ty* pop();
+	virtual void Erase(_Ty* pElement);
 
 	template <typename find_function>
 	constexpr _Ty* find(find_function ty);

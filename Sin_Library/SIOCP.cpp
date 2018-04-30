@@ -13,7 +13,7 @@ DWORD SIOCP::g_userID = USER_ID_INDEX;
 
 
 SIOCP::SIOCP()
-	:m_cs(), m_ThreadAccept(NULL), m_ThreadWork(NULL), m_ThreadDisconnect(NULL)
+	:m_cs(), m_RoutinueAccept(NULL), m_RoutinueWork(NULL), m_RoutinueDisconnect(NULL)
 {
 }
 
@@ -264,7 +264,7 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 
 		//Aceept를 성공한 후에...
 		//		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
-		pIocp->m_ThreadAccept(client_socket, client_addr);
+		pIocp->m_RoutinueAccept(client_socket, client_addr);
 	}
 }
 
@@ -290,7 +290,7 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 		{
 			if (pOverlapped != NULL)
 			{
-				pIocp->m_ThreadDisconnect(pCompletionKey);
+				pIocp->m_RoutinueDisconnect(pCompletionKey);
 				pIocp->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
 				GameMessageManager::GetInstance()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			}
@@ -308,7 +308,7 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 			continue;
 		}
 
-		pIocp->m_ThreadWork(pCompletionKey, pOverlapped, DwNumberBytes);
+		pIocp->m_RoutinueWork(pCompletionKey, pOverlapped, DwNumberBytes);
 	}
 
 	return 0;

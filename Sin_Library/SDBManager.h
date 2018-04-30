@@ -55,16 +55,14 @@ public:
 	std::function<void(BTZ_SQL*, ResSql&, DWORD) > m_dbProcess;
 	
 private:
-	VecContainer<BTZ_SQL> m_vecDBMsgContainer; // 전체 컨테이너
-	VecContainer<BTZ_SQL> m_vecDBMsg; // 대기중인 컨테이너
-	VecContainer<BTZ_SQL> m_vecDBMsgEcho; // 결과 컨테이너 // 안씀
-
+	VecContainer<BTZ_SQL> m_vecDBMsgContainer;	// 전체 컨테이너
+	VecContainer<BTZ_SQL> m_vecDBMsg;			// 대기중인 컨테이너
+	VecContainer<BTZ_SQL> m_vecDBMsgEcho;		// 결과 컨테이너 // 안씀
 
 	HANDLE m_hEvent;
 
 	SMySqlManager m_sqlManager;
 
 	std::thread m_threadHandle;
-
 };
 

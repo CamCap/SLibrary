@@ -14,11 +14,12 @@ struct GameMSG
 	char packet[MAX_GAME_MSG_SIZE];
 };
 
-typedef std::list<GameMSG*> LIST_MSG;
 
 class GameMessageManager
 	:public SSingleton<GameMessageManager>
 {
+typedef std::list<GameMSG*> LIST_MSG;
+
 public:
 	GameMessageManager();
 	~GameMessageManager();

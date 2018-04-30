@@ -4,8 +4,8 @@
 
 struct DlgOption
 {
-	DWORD MsgHwnd;
-	DWORD TimerHwnd;
+	HWND MsgHwnd;
+	HWND TimerHwnd;
 	HWND dlgHwnd;
 	HINSTANCE hInstance;
 	int resID;
@@ -15,12 +15,12 @@ struct DlgOption
 class SDlg
 {
 public:
-	void OnInitDlg(DlgOption* option);
-	void StartDlg(HINSTANCE hInstance, int resID, HWND parentHwnd);
+	void OnInitDlg();
+	void StartDlg(DlgOption* option);
 
 	BOOL OnExit(HWND hWnd);
-
-	HWND GetHWND() { return m_hWnd; }
+/*
+	HWND GetHWND() { return m_hWnd; }*/
 
 	void SetMessage(const char *s);
 	void SetRunTime();
@@ -30,10 +30,6 @@ public:
 	~SDlg();
 
 protected:
-	HWND m_hWnd;
-	HWND m_hWndMsg;				// 메세지를 출력할 리스트 박스 핸들.
-	HWND m_hTimer;				//서버 가동 시간 에디트박스 핸들
-
 	DWORD m_Day;
 	DWORD m_Hour;
 	DWORD m_Minute;
@@ -45,6 +41,8 @@ protected:
 	char m_RunTime[15];
 
 	SCriticalSection m_cs;
+	
+	DlgOption m_option;
 
 public:
 };

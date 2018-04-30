@@ -158,7 +158,7 @@ bool SMySqlManager::Fetch()
 {
 	int result = SQLFetch(m_hStmt);
 
-	if (m_ret == SQL_NO_DATA) return FALSE;
+//	if (m_ret == SQL_NO_DATA) return FALSE;
 
 	return TRUE;
 }

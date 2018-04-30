@@ -77,7 +77,7 @@ public:
 	~SSession();
 
 	void InitSession(SOCKET socket, SOCKADDR_IN addr, char* recvbuffer, int recvlen);
-	void CloseSocket();
+	void ReleaseSession();
 
 	BOOL Recv();
 
@@ -162,7 +162,7 @@ public:
 
 	std::string GetName() { return m_name; }
 	void OnPingCheck(DWORD tick);
-	void SetPingCheckTime(DWORD tick) { m_pingCheckTime = tick; }
+//	void SetPingCheckTime(DWORD tick) { m_pingCheckTime = tick; }
 
 public:
 	SServer();
@@ -172,8 +172,6 @@ private:
 	std::string m_name;
 
 	DWORD m_tickPing;
-
-	DWORD m_pingCheckTime;
 };
 
 
