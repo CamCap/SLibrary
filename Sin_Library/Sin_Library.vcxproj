@@ -162,9 +162,10 @@
   <ItemGroup>
     <ClInclude Include="Container.h" />
     <ClInclude Include="CriticalSection.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SDBManager.h" />
-    <ClInclude Include="SMySqlManager.h" />
     <ClInclude Include="SDlg.h" />
+    <ClInclude Include="SMySqlManager.h" />
     <ClInclude Include="GameMessage.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="SIOCP.h" />
@@ -178,8 +179,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SDBManager.cpp" />
-    <ClCompile Include="SMySqlManager.cpp" />
     <ClCompile Include="SDlg.cpp" />
+    <ClCompile Include="SMySqlManager.cpp" />
     <ClCompile Include="GameMessage.cpp" />
     <ClCompile Include="SIOCP.cpp" />
     <ClCompile Include="Log.cpp" />
@@ -191,6 +192,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Sin_Library1.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

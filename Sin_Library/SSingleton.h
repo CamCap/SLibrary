@@ -5,30 +5,35 @@
 template <typename T>
 class SSingleton
 {
-public:
-	SSingleton(void)
+protected:
+	SSingleton()
 	{
 		assert(!ms_singleton);
-		int offset = (int)(T*)1 - (int)(SSingleton <T>*)(T*)1;
-		ms_singleton = (T*)((int)this + offset);
+		long long offset = (long long)(T *)1 - (long long)(SSingleton<T> *)(T *)1;
+		ms_singleton = (T *)((long long)this + offset);
 	}
-	~SSingleton(void)
+	~SSingleton()
 	{
 		assert(ms_singleton);
 		ms_singleton = 0;
 	}
-	static T* GetInstance(void)
-	{
-		assert(ms_singleton);
-		return (ms_singleton);
-	}
-	static T* GetSingletonPtr(void)
-	{
-		return (ms_singleton);
-	}
 
-protected:
-	static T* ms_singleton;
+public:
+	static T * GetInstance()
+	{
+		if (ms_singleton == NULL)
+			ms_singleton = new T;
+		return ms_singleton;
+	};
+	static void destroyInstance()
+	{
+		if (ms_singleton) {
+			delete ms_singleton;
+			ms_singleton = NULL;
+		}
+	};
+
+private:
+	static T * ms_singleton;
 };
-
 

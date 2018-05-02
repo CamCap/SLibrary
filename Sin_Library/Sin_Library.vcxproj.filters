@@ -48,9 +48,6 @@
     <ClInclude Include="SIOCP.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="SDlg.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SPeerContainer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -58,6 +55,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SDBManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SDlg.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -80,14 +83,19 @@
     <ClCompile Include="SIOCP.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="SDlg.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="SDBManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SMySqlManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="SDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Sin_Library1.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

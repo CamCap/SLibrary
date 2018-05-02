@@ -1,26 +1,43 @@
 #pragma once
 #include "CriticalSection.h"
+#include <map>
+#include <cstdarg>
+#include <functional>
+#include <string>
 
-
-struct DlgOption
-{
-	HWND MsgHwnd;
-	HWND TimerHwnd;
-	HWND dlgHwnd;
-	HINSTANCE hInstance;
-	int resID;
-	DLGPROC dlgProc;
-};
 
 class SDlg
 {
+	struct DlgOption
+	{
+		typedef std::pair<DWORD, HWND> HWND_PAIR;
+		typedef std::map<std::string, HWND_PAIR> MAP_HWND;
+		friend class SDlg;
+
+		HWND dlgHwnd;
+		HINSTANCE hInstance;
+		DLGPROC dlgProc;
+		DWORD dlgResId;
+
+		MAP_HWND m_map;
+
+		DlgOption(HWND hWnd, HINSTANCE hi, DWORD dlgId, DLGPROC proc)
+			:dlgHwnd(hWnd), hInstance(hi), dlgResId(dlgId), dlgProc(proc)
+		{
+		}
+
+	private:
+
+		DlgOption() {}
+	};
+
 public:
 	void OnInitDlg();
-	void StartDlg(DlgOption* option);
-
+	void StartDlg(DlgOption option);
 	BOOL OnExit(HWND hWnd);
 /*
-	HWND GetHWND() { return m_hWnd; }*/
+	HWND GetHWND() { return m_hWnd; }
+	*/
 
 	void SetMessage(const char *s);
 	void SetRunTime();
@@ -42,8 +59,6 @@ protected:
 
 	SCriticalSection m_cs;
 	
-	DlgOption m_option;
-
-public:
+	DlgOption m_opt;
 };
 
