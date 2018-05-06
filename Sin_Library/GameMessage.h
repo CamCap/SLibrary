@@ -54,6 +54,7 @@ private:
 
 //------------------------------------------------------------//
 
+template<> GameMessageManager* SSingleton<GameMessageManager>::ms_singleton = 0;
 extern bool InitDataBase();
 extern void GameMessageProcedure(DWORD msg, DWORD wParam, DWORD lParam, const char *pPacket);
 

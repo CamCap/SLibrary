@@ -25,13 +25,6 @@ public:
 			ms_singleton = new T;
 		return ms_singleton;
 	};
-	static void destroyInstance()
-	{
-		if (ms_singleton) {
-			delete ms_singleton;
-			ms_singleton = NULL;
-		}
-	};
 
 private:
 	static T * ms_singleton;

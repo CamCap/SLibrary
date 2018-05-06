@@ -2,7 +2,7 @@
 #include "GameMessage.h"
 #include "SIOCP.h"
 
-template<> GameMessageManager* SSingleton<GameMessageManager>::ms_singleton = 0;
+//template<> GameMessageManager* SSingleton<GameMessageManager>::ms_singleton = 0;
 
 
 GameMessageManager::GameMessageManager()

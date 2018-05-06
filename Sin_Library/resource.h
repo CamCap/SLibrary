@@ -7,6 +7,7 @@
 #define IDC_LOG_LIST                    1001
 #define IDC_TIME_EDIT                   1002
 #define IDC_TIME_STATIC                 1003
+#define TIME_ID                         2000
 
 // Next default values for new objects
 // 
