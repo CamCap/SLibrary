@@ -4,7 +4,7 @@
 #include <cstringt.h>
 #include <atlstr.h>
 
-void TimerBehavair::SetRunTime()
+void TimerBehavair::Behavair()
 {
 	m_TimeCount++;
 	if (m_TimeCount == 6)
@@ -26,11 +26,16 @@ void TimerBehavair::SetRunTime()
 		str.Format(_T("%d일%2d시%2d분"), m_Day, m_Hour, m_Minute);
 
 		m_TimeCount = 0;
+
+		SetWindowText(m_hWndEdit, LPCWSTR(LPCTSTR(str)));
 	}
 }
 
-void TimerBehavair::SetTimer(DWORD time)
+void TimerBehavair::SetTimer(HWND hWndList, HWND hWndEdit, DWORD time)
 {
+	m_hWndList = hWndList;
+	m_hWndEdit = hWndEdit;
+
 	SYSTEMTIME st;
 	CString str;
 	GetLocalTime(&st);
@@ -53,6 +58,8 @@ void TimerBehavair::SetTimer(DWORD time)
 	else
 		wsprintfA(day, "%d", st.wDay);
 
+	str.Format(_T("%d일%2d시%2d분 서버 가동 시작"), st.wDay, st.wHour, st.wMinute);
+	SendMessage(m_hWndList, LB_ADDSTRING, (WPARAM)0, (LPARAM)LPSTR(LPCTSTR(str)));
 }
 
 //////////////////////////////////////////////////////////////////
@@ -81,28 +88,27 @@ void SDlg::StartDlg(DlgOption option)
 	DialogBox(m_opt.hInstance, MAKEINTRESOURCE(m_opt.dlgResId), m_opt.dlgHwnd, m_opt.dlgProc);
 }
 
-void SDlg::SetTimer(DWORD time)
+void SDlg::SetTimer(HWND hWndList, HWND hWndEdit, DWORD time)
 {
 	::SetTimer(m_opt.dlgHwnd, TIME_ID, time, NULL);
 
+	m_behavair.SetTimer(hWndList, hWndEdit, time);
 	//str.Format(_T("%d일%2d시%2d분 서버 가동 시작"), st.wDay, st.wHour, st.wMinute);
 	//SetMessage(this->m_opt.ListID, LPSTR(LPCTSTR(str)));
 	//m_timerFunction = process;
 }
 
-void SDlg::SetMessage(DWORD resid, const char *s)
+void SDlg::SetMessage(HWND hWnd, const char *s)
 {
-	HWND hWnd = GetDlgItem(m_opt.dlgHwnd, resid);
+	if (hWnd == NULL) return;
 
-	//if (hWnd == NULL) return;
 
-	SendMessage(hWnd, LB_ADDSTRING, (WPARAM)0, (LPARAM)s);
+	DWORD result = SendMessage(hWnd, LB_ADDSTRING, (WPARAM)0, (LPARAM)s);
 }
 
-
-void SDlg::SetRunTime(DWORD EditID)
+void SDlg::SetRunTime()
 {
-	
+	this->m_behavair.Behavair();
 }
 
 INT_PTR SDlg::BTZ_PROC(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

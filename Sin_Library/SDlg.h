@@ -5,6 +5,7 @@
 
 class SDlgBehavair
 {
+public:
 	virtual void Behavair() = 0;
 };
 
@@ -23,14 +24,16 @@ class TimerBehavair : public SDlgBehavair
 	DWORD m_TimeCount;
 	char m_RunTime[15];
 
+public:
 	virtual void Behavair();
 
-	void SetTimer(DWORD time);
-	void SetRunTime();
+	void SetTimer(HWND hWndList, HWND hWndEdit, DWORD time);
+
+	TimerBehavair() {}
+	~TimerBehavair() {}
 };
 
-여기에 다시 중간 다리를 놓는 클래스를 추가해..? 아니 시발 왜..?
-...아 시발 진짜 어렵네
+
 class SDlg
 {
 public:
@@ -65,12 +68,11 @@ public:
 	void StartDlg(DlgOption option);
 	BOOL OnExit(HWND hWnd);
 
-	void SetTimer(DWORD time);
-	//void
+	void SetTimer(HWND hWndList, HWND hWndEdit, DWORD time);
+	void SetRunTime();
 
-	void SetMessage(DWORD resid, const char *s);
-	void SetRunTime(DWORD EditID);
-
+	void SetMessage(HWND hWnd, const char *s);
+	
 	INT_PTR CALLBACK BTZ_PROC(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 public:

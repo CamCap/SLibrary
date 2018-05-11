@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "GameMessage.h"
 #include "SIOCP.h"
+#include <ws2tcpip.h>
 
 SSocket::SSocket()
 {
@@ -36,14 +37,14 @@ void SSocket::InitSocket(SOCKET socket, SOCKADDR_IN addr)
 	m_addr = addr;
 }
 
-void SSocket::SetAddr(int family, int port, u_short addr)
+void SSocket::SetAddr(int family, int port, const char* ip)
 {
 	memset(&m_addr, 0, sizeof(m_addr));
 
 	//	m_addr.sin_addr.
 	m_addr.sin_family = family;
 	m_addr.sin_port = htons(port);
-	m_addr.sin_addr.s_addr = htonl(addr);
+	auto ret = inet_pton(family, ip, (void*)&m_addr.sin_addr.s_addr);
 }
 
 void SSocket::SetAddr(SOCKADDR_IN sockaddr)

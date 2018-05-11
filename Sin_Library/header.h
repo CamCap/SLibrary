@@ -4,11 +4,23 @@
 #include <vector>
 #include <string>
 
+#define LOGIN_SERVER 10
+#define LOGIN_SERVER_IP "127.0.0.1"
+#define LOGIN_SERVER_PORT 14483
+
+#define INGAME_SERVER 20
+#define INGAME_SERVER_IP "127.0.0.1"
+#define INGAME_SERVER_PORT 14572
+
+#define MASTER_SERVER_IP "127.0.0.1"
+#define MASTER_SERVER_PORT 16523
+
+///////////////////////////////////////////////////////////////////////////
 
 #define PING_CHECK_TIME  10000 //핑 체크 시간
 
-#define SERVER_PORT 14483
-#define SERVER_IP "127.0.0.1"
+//#define SERVER_PORT 14483
+//#define SERVER_IP "127.0.0.1"
 
 //////////////////////////////////////////////////////////////////
 

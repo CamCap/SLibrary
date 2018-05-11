@@ -158,7 +158,7 @@ bool SMySqlManager::Fetch()
 {
 	int result = SQLFetch(m_hStmt);
 
-//	if (m_ret == SQL_NO_DATA) return FALSE;
+	if (result == SQL_NO_DATA) return FALSE;
 
 	return TRUE;
 }
@@ -168,15 +168,6 @@ void SMySqlManager::Clear()
 	SQLCloseCursor(m_hStmt);
 	SQLFreeStmt(m_hStmt, SQL_UNBIND);
 }
-
-//
-//template <class... Args>
-//constexpr TemplateClass<Args...> SMySqlManager::RetrieveResult(Args... arg)
-//{
-//	TemplateClass<Args...> m_temp;	
-//	
-//
-//}
 
 void SMySqlManager::DisconnectDataSource()
 {

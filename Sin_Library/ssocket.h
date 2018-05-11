@@ -25,7 +25,7 @@ public:
 
 	//void SetSocket(SOCKET socket) { m_socket = socket; }
 	void SetAddr(SOCKADDR_IN sockaddr);
-	void SetAddr(int family, int addr, u_short port);
+	void SetAddr(int family, int port, const char* ip);
 
 	void ReleaseSocket() { m_socket = INVALID_SOCKET; }
 

@@ -17,7 +17,7 @@ typedef void(*IOCPDisconnect)(SPeer*);
 class SIOCP
 {
 public:
-	bool CreateIOCP(); //IOCP를 생성하자
+	bool CreateIOCP(const char* ip, int port); //IOCP를 생성하자
 	void CleanUp();
 
 
@@ -25,7 +25,9 @@ public:
 	bool GetCompletionStatus(LPDWORD pdwOutBytesTransferred, ULONG_PTR* pOutCompletionKey, WSAOVERLAPPED** pOutOverlapped, \
 		int* pErrCode = NULL, DWORD dwWaitingTime = INFINITE); //INFINITE를 설정하면 무한대로 대기한다. 즉 스레드를 대기상태로 만듬
 	bool PostCompletionStatus(DWORD CompleitonKey, DWORD dwBytesTransferred = 0, WSAOVERLAPPED* pOverlapped = NULL);
-		
+	
+	constexpr SSocket& GetAcceptSocket() { return accept_socket; }
+
 public:
 	explicit SIOCP();
 	~SIOCP();
@@ -50,6 +52,7 @@ private:
 	HANDLE m_threads[MAX_WORKER_THREAD];
 	HANDLE m_acceptthread;
 	unsigned short m_threadcount;
-	
+
+	SSocket accept_socket;
 };
 

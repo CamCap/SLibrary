@@ -24,37 +24,42 @@ SIOCP::~SIOCP()
 }
 
 
-bool SIOCP::CreateIOCP()
+bool SIOCP::CreateIOCP(const char* ip, int port)
 {
-	WSADATA             wsaData;
+	WSADATA wsaData;
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-		//Log::Instance()->WriteLog("Project-socket", "WASStartup error");
 		ERROR_LOG("WASStartup error");
 		return FALSE;
 	}
-
-	//	InitializeCriticalSection(&m_criticalsection);
 
 	m_handle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 
 	if (m_handle == NULL)
 	{
 		ERROR_LOG("WASStartup error");
-		//Log::Instance()->WriteLog("Project-socket", "create IOCP handle error");
 		CleanUp();
 		return FALSE;
 	}
+
+
+	if (accept_socket.CreateWSASocket() == FALSE)
+	{
+		SOCKET_ERROR_LOG_CODE;
+		return 0;
+	}
+	
+	accept_socket.SetAddr(AF_INET, port, ip);
 
 
 	if (CreateIOCPThread() == false)
 	{
 		ERROR_LOG("CreateIOCPThread Error!");
-		//Log::Instance()->WriteLog("Project-socket", "create IOCP handle error");
 		CleanUp();
 		return FALSE;
 	}
+
 	return true;
 }
 
@@ -191,18 +196,9 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 {
 	SIOCP* pIocp = (SIOCP*)pAcceptOL;
 
-	SSocket accept_socket;
 	SOCKET client_socket;
 	SOCKADDR_IN client_addr;
-
-	if (accept_socket.CreateWSASocket() == FALSE)
-	{
-		//Log::Instance()->WriteLog("Project-socket", "Accept Socket Create Fail");
-		SOCKET_ERROR_LOG_CODE;
-		return 0;
-	}
-
-	accept_socket.SetAddr(AF_INET, SERVER_PORT, INADDR_ANY);
+	SSocket& accept_socket = pIocp->GetAcceptSocket();
 
 	if (SocketTool::Bind(accept_socket.m_socket, accept_socket.m_addr) == INVALID_SOCKET)
 	{
@@ -215,8 +211,8 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 #else
 		SOCKET_ERROR_LOG_CODE
 #endif
-
-			accept_socket.CloseSocket();
+		accept_socket.CloseSocket();
+		
 		return 0;
 		//	Log::Instance()->WriteLog("Project-socket", "Socket Bind Error");
 	}
@@ -224,8 +220,6 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 	int send_size;
 	int send_len = sizeof(send_size);
 
-
-	//listen_socket의 Send buffer의 옵션을 확인하기위한 함수
 	if (getsockopt(accept_socket.m_socket, SOL_SOCKET, SO_SNDBUF, (char *)&send_size, &send_len) != SOCKET_ERROR)
 	{
 		send_size *= 100; //send buffer 크기를 왜 100배로?
@@ -248,8 +242,8 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		return 0;
 	}
 	else
-		printf("Listen Sucess! IP : %s / Port : %d \n", SERVER_IP, SERVER_PORT);
-
+	{//	printf("Listen Sucess! IP : %s / Port : %d \n", SERVER_IP, SERVER_PORT);
+	}
 
 	//accept 반복
 	while (1)
@@ -263,7 +257,6 @@ unsigned WINAPI Accept(LPVOID pAcceptOL)
 		}
 
 		//Aceept를 성공한 후에...
-		//		SPeer* puser = UserContainer::GetInstance()->Pop_EmptyUser();
 		pIocp->m_RoutinueAccept(client_socket, client_addr);
 	}
 }
