@@ -63,6 +63,8 @@ public:
 		m_vecActivePeer.process(pf, arg...);
 	}
 
+	int WaitPeerNum() { return m_vecWaitPeer.size(); }
+	int ActivePeerNum() { return m_vecActivePeer.size(); }
 public:
 	SPeerContainer() : m_vecWaitPeer(0), m_vecActivePeer(0) {}
 	~SPeerContainer() {}

@@ -8,6 +8,7 @@
 #define IDC_TIME_EDIT                   1002
 #define IDC_TIME_STATIC                 1003
 #define TIME_ID                         2000
+#define TIME_MASTER_SERVER_PING			TIME_ID + 1
 
 // Next default values for new objects
 // 

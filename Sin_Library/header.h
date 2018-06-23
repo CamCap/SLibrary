@@ -4,6 +4,13 @@
 #include <vector>
 #include <string>
 
+
+#define MAX_MATCH_USER 8
+
+#define MAX_MATCH_ROOM 10
+
+////////////////////////////////////////////////////////////
+
 #define LOGIN_SERVER 10
 #define LOGIN_SERVER_IP "127.0.0.1"
 #define LOGIN_SERVER_PORT 14483

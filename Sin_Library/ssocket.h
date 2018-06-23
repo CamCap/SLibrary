@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include "header.h"
+#include <WS2tcpip.h>
 #include <WinSock2.h>
 #include "Packet.h"
 #include "CriticalSection.h"
@@ -104,7 +105,6 @@ private:
 
 #define USER_BUFFER_SIZE 1024
 
-
 class SPeer
 {
 public:
@@ -119,31 +119,47 @@ public:
 
 public:
 	void Send(BTZPacket* packet);
+	void Send(char* data);
 	void CheckSendPacket(); // GQCS에서 Send 완료 되면 호출할 것
 	void ReleaseSocket();
 	bool InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid);
 
 	BOOL RecvPacket(int size);
 
-	int GetId() { return m_id; }
+	int GetID() { return m_id; }
 	DWORD GetOLType() { return m_session.m_recvOL.io_type; }
+
+	int Recv();
+#ifdef _DLLWraper 
+	void InitPeer(SOCKET socket, SOCKADDR_IN addr) {
+		m_session.InitSession(socket, addr, recv_buffer, USER_BUFFER_SIZE);
+	}
+
+#endif
 
 protected:
 	void ErrorHandle(const char* function);
 	//	virtual void PacketProcess(BTZPacket* packet);
-	void Recv();
 
 
 public:
-	std::function<void(BTZPacket*)> m_packetProcess;
 
+	//int GetID() { return m_id; }
+
+#ifdef _DLLWraper
+	typedef void(*process)(BTZPacket*);
+	//process m_packetProcess;
+
+	std::function<void(BTZPacket*)> m_packetProcess;
+#else
+	std::function<void(BTZPacket*)> m_packetProcess;
+#endif
 protected:
 	SSession m_session;
 	SCircleQueue m_queue;
 	char recv_buffer[USER_BUFFER_SIZE];
 
 	SPacketContainer m_vecSendPacket; // 보내는 패킷 벡터
-//	SPacketContainer m_vecStandPacket; // 사용대기중인 패킷 벡터
 
 	SCriticalSection m_cs;
 

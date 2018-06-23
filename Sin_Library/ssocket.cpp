@@ -2,7 +2,7 @@
 #include "ssocket.h"
 #include <cstdio>
 #include "Log.h"
-#include "GameMessage.h"
+//#include "GameMessage.h"
 #include "SIOCP.h"
 #include <ws2tcpip.h>
 
@@ -76,8 +76,6 @@ void SSession::InitSession(SOCKET socket, SOCKADDR_IN addr, char* recvbuffer, in
 
 void SSession::ReleaseSession()
 {
-	//	GameMessageManager::Instnace()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)this, (DWORD)&m_recvOL, NULL);
-
 	//소켓 강제 종료
 	///다음의 기능은 http://egloos.zum.com/mirine35/v/5057014 참조
 	///우아한 종료로 TIMEOUT이 발생할 수 있음. 시나리오는 위를 참조.
@@ -90,8 +88,7 @@ void SSession::ReleaseSession()
 
 	if (setsockopt(m_socket.m_socket, SOL_SOCKET, SO_LINGER, (char*)&LingerStruct, sizeof(LingerStruct) == SOCKET_ERROR))
 	{
-		//return;
-		ERROR_LOG("Set Socket LINGER Error ");
+		ERROR_LOG("Set Socket LINGER Error");
 	}
 
 
@@ -106,9 +103,10 @@ void SSession::SetSessionInfo()
 
 }
 
-BOOL SSession::Recv()
+int SSession::Recv()
 {
 	SOCKET_INVALID_CHECK(m_socket.m_socket);
+
 	if (m_recvOL.io_type == IO_NONE) return false;
 
 
@@ -120,13 +118,10 @@ BOOL SSession::Recv()
 
 	int result = WSARecv(m_socket.m_socket, &m_recvOL.io_buff, 1, &dwRecvNumBytes, &dwFlags, (WSAOVERLAPPED*)&m_recvOL, NULL);
 
-	if (result == SOCKET_ERROR)
-		return FALSE;
-	else
-		return TRUE;
+	return result;
 }
 
-BOOL SSession::Send(char* buffer, int len, int& errcode)
+int SSession::Send(char* buffer, int len, int& errcode)
 {
 	SOCKET_INVALID_CHECK(m_socket.m_socket);
 
@@ -145,13 +140,8 @@ BOOL SSession::Send(char* buffer, int len, int& errcode)
 	m_sendOL.io_type = IO_SENDING;
 
 	int result = WSASend(m_socket.m_socket, &m_sendOL.io_buff, 1, &dwsendbyte, dwflag, (WSAOVERLAPPED*)&m_sendOL, NULL);
-	//LPWSAOVERLAPPED_COMPLETION_ROUTINE
-	if (result == SOCKET_ERROR)
-	{
-		return FALSE;
-	}
 
-	return TRUE;
+	return result;
 }
 ////////////////////////////////////////////////////////////////////////////
 
@@ -175,15 +165,29 @@ void SPeer::Send(BTZPacket* packet)
 	CheckSendPacket();
 }
 
-void SPeer::Recv()
+void SPeer::Send(char* data)
 {
-	bool result = m_session.Recv();
+	m_vecSendPacket.Push((BTZPacket*)data);
+
+	CheckSendPacket();
+}
+
+int SPeer::Recv()
+{
+	int result = m_session.Recv();
+
+#ifdef _DLLWraper 
+
+#else
 
 	if ((result == FALSE) && (ERROR_IO_PENDING != WSAGetLastError()))
 	{
 		//에러제어
 		ErrorHandle(__FUNCTION__);
 	}
+#endif
+
+	return result;
 }
 
 
@@ -202,12 +206,10 @@ void SPeer::CheckSendPacket()
 			//에러제어
 			ErrorHandle(__FUNCTION__);
 		}
-	//	SAFE_DELETE(sendpacket);
 	}
 	else
 	{
 		m_session.SendComplete();
-//		SSession::SESSIONSTATEToString(SSession::SEND_COMPLETE);
 	}
 }
 
@@ -225,32 +227,30 @@ bool SPeer::InitPeer(SOCKET socket, SOCKADDR_IN addr, int userid)
 	return true;
 }
 
-BOOL SPeer::RecvPacket(int size)
+BOOL SPeer::RecvPacket(int recv_size)
 {
 	BTZPacket* packet = NULL;
 
+#ifdef _DLLWraper
+#else
 	CSLOCK(m_cs)
+#endif
 	{
-
-		if (m_queue.Push(recv_buffer, size) == FALSE)
-		{
-			//UnLock();
+		if ( m_queue.Push(recv_buffer, recv_size) == FALSE )
 			return FALSE;
-		}
 
 		while (true)
 		{
 			packet = m_queue.Pop();
 
-			if (packet == NULL) break;
+			if ( packet == NULL ) break;
 
-			GameMessageManager::GetInstance()->SendGameMessage(GM_PKTRECEIVE, size, 0, (char*)packet);
-			m_packetProcess(packet);
 		}
 	}
-
-	this->Recv();
-
+#ifdef _DLLWraper
+#else
+	Recv();
+#endif
 	return TRUE;
 }
 

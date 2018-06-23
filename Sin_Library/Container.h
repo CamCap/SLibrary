@@ -103,7 +103,7 @@ _Ty* VecContainer<_Ty>::pop()
 
 	CSLOCK(m_cs)
 	{
-		if (m_pVec.size() > 0)
+		if (this->m_pVec.size() > 0)
 		{
 			pElement = m_pVec.back();
 			if (pElement != NULL)
@@ -183,6 +183,8 @@ public:
 
 	template <typename process_function, typename... Args>
 	void process(process_function pf, Args... arg);
+
+	int size() { return m_pList.size(); }
 
 	//	template <typename process_function>
 	//	void process(process_function pf);

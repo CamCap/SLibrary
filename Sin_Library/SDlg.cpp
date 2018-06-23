@@ -79,6 +79,17 @@ void SDlg::OnInitDlg(HWND hWnd)
 	ShowWindow(m_opt.dlgHwnd, SW_SHOWNORMAL);
 	
 	m_opt.dlgHwnd = hWnd;
+
+	if (m_opt.use_master_server)
+	{
+		if (m_masterBehavair.ConnectMasterServer(MASTER_SERVER_IP, MASTER_SERVER_PORT) == false)
+		{
+			SetMessage("Master Server Not Connect \n");
+			PostQuitMessage(0);
+		}
+		else
+			this->m_masterBehavair.SetTimer(hWnd);
+	}
 }
 
 void SDlg::StartDlg(DlgOption option)
@@ -86,16 +97,15 @@ void SDlg::StartDlg(DlgOption option)
 	memcpy(&m_opt, &option, sizeof(DlgOption));
 
 	DialogBox(m_opt.hInstance, MAKEINTRESOURCE(m_opt.dlgResId), m_opt.dlgHwnd, m_opt.dlgProc);
+
+//	m_opt.use_master_server ? 
 }
 
 void SDlg::SetTimer(HWND hWndList, HWND hWndEdit, DWORD time)
 {
 	::SetTimer(m_opt.dlgHwnd, TIME_ID, time, NULL);
 
-	m_behavair.SetTimer(hWndList, hWndEdit, time);
-	//str.Format(_T("%d일%2d시%2d분 서버 가동 시작"), st.wDay, st.wHour, st.wMinute);
-	//SetMessage(this->m_opt.ListID, LPSTR(LPCTSTR(str)));
-	//m_timerFunction = process;
+	m_Timerbehavair.SetTimer(hWndList, hWndEdit, time);
 }
 
 void SDlg::SetMessage(HWND hWnd, const char *s)
@@ -106,22 +116,29 @@ void SDlg::SetMessage(HWND hWnd, const char *s)
 	DWORD result = SendMessage(hWnd, LB_ADDSTRING, (WPARAM)0, (LPARAM)s);
 }
 
-void SDlg::SetRunTime()
+void SDlg::SetMessage(const char * s)
 {
-	this->m_behavair.Behavair();
+	MessageBoxA(m_opt.dlgHwnd, s, "MessageBox", MB_OK);
 }
+
 
 INT_PTR SDlg::BTZ_PROC(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
 	switch (uMsg)
 	{
+	case WM_INITDIALOG:
+	{
+	}
+		break;
 	case WM_TIMER:
 	{
 		switch (wParam)
 		{
 		case TIME_ID:
-			SetRunTime();
+			m_Timerbehavair.Behavair();
+			break;
+		case TIME_MASTER_SERVER_PING:
+			m_masterBehavair.Behavair();
 			break;
 		}
 	}break;

@@ -13,14 +13,10 @@ struct BTZ_SQL
 {
 	DWORD sql_id;
 	char query[MAX_QUERY_BUFF_SIZE];
-
-//	ResSql res_sql;
 };
 
 class SDBManager
 {
-//	using namespace std::thread;
-
 public:
 	SDBManager();
 	~SDBManager();

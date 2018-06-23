@@ -1,67 +1,47 @@
 ﻿#include "stdafx.h"
 #include "Log.h"
 #include <ctime>
-
-File::File()
-{
-
-}
-
-File::File(string filename)
-{
-	FileOpen(filename);
-}
-
-File::~File()
-{
-	FileClose();
-}
-
-bool File::FileOpen(string filename)
-{
-	filename += ".txt";
-	m_file.open(filename, std::ios::app);
-
-	if (!IsFileOpen()) {
-		return false;
-	}
-
-	return true;
-}
-
-void File::FileClose()
-{
-	if (!IsFileOpen())
-		return;
-
-	m_file.close();
-}
-
-bool File::FileWrite(string write)
-{
-	if (!IsFileOpen())
-	{
-		return false;
-	}
-
-	m_file << write << std::endl;
-
-	return true;
-}
-
-//미구현
-bool File::FileRead(string read)
-{
-
-	return true;
-}
-
-bool File::IsFileOpen()
-{
-	return (m_file.fail() || m_file.bad()) ? false : true;
-}
-
-///////////////////////////////
+//
+//File::File()
+//{
+//
+//}
+//
+//File::File(string filename)
+//{
+//	FileOpen(filename);
+//}
+//
+//File::~File()
+//{
+//	FileClose();
+//}
+//
+//bool File::FileOpen(string filename)
+//{
+//	filename += ".txt";
+//	m_file(filename);
+//
+//	return true;
+//}
+//
+//void File::FileClose()
+//{
+////	m_file.close();
+//}
+//
+//bool File::FileWrite(string write)
+//{
+//	return m_file << write;
+//}
+////
+//////미구현
+////bool File::FileRead(string read)
+////{
+////	return m_file >> read;
+////}
+//
+/////////////////////////////////
 
 Log* Log::m_instance = NULL;
 
@@ -96,7 +76,7 @@ Log::~Log()
 
 	for (it; it != m_logmap.end(); it)
 	{
-		it->second->FileClose();
+	//	it->second->FileClose();
 		delete it->second;
 		m_logmap.erase(it);
 	}
@@ -126,7 +106,7 @@ void Log::WriteLog(string filename, string log)
 	str += log;
 	//UnLock();
 
-	m_logmap[filename]->FileWrite(str);
+	*m_logmap[filename] << str;
 }
 
 void Log::WriteLog(string filename, int errorcdoe)

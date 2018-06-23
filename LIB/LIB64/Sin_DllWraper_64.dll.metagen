@@ -1,0 +1,65 @@
+ImageRuntimeVersion: v4.0.30319
+Assembly Sin_DllWraper_64, Version=0.0.*, Culture=고정 언어(고정 국가): 
+	hash=SHA1, flags=PublicKey
+Assembly mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Class SLibrary_Warper.NetworkDefine: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Int16 pkt_size = 6 : Public, Static, Literal, HasDefault
+Class SLibrary_Warper.IResultLevel: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Int16 IMsg = 0 : Public, Static, Literal, HasDefault
+    Int16 IErr = 1 : Public, Static, Literal, HasDefault
+    Int16 ICri = 2 : Public, Static, Literal, HasDefault
+    Int16 INull = 3 : Public, Static, Literal, HasDefault
+Class SLibrary_Warper.ResultInfo: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(System.String): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+    Void .ctor(Int16, SByte*): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+    Void .ctor(SByte*): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Interfaces:
+    System.IDisposable
+  Fields:
+    Int16 m_Level : Public
+    System.String msg : Public
+  Methods:
+    Dispose(): PrivateScope, Public, Final, Virtual, HideBySig
+Class SLibrary_Warper.Peer: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Interfaces:
+    System.IDisposable
+  Fields:
+    ErrorHandle m_ErrorHandle : Public
+    PacketProcess m_PacketProcess : Public
+  Methods:
+    CreatePeer(): PrivateScope, Public, HideBySig
+    Disconnect(): PrivateScope, Public, HideBySig
+    Connect(SByte*, Int32): PrivateScope, Public, HideBySig
+    WraperProcess(BTZPacket*): PrivateScope, Public, HideBySig
+    Recv(): PrivateScope, Public, HideBySig
+    Send(MemoryStream): PrivateScope, Public, HideBySig
+    Dispose(): PrivateScope, Public, Final, Virtual, HideBySig
+Class SLibrary_Warper.Peer+PacketProcess: AutoLayout, AnsiClass, Class, NestedPublic, Sealed, BeforeFieldInit
+  :System.MulticastDelegate
+    Void .ctor(System.Object, IntPtr): PrivateScope, Public, SpecialName, RTSpecialName
+  Methods:
+    Invoke(List`1, Int32): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    BeginInvoke(List`1, Int32, AsyncCallback, Object): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    EndInvoke(IAsyncResult): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+Class SLibrary_Warper.Peer+ErrorHandle: AutoLayout, AnsiClass, Class, NestedPublic, Sealed, BeforeFieldInit
+  :System.MulticastDelegate
+    Void .ctor(System.Object, IntPtr): PrivateScope, Public, SpecialName, RTSpecialName
+  Methods:
+    Invoke(ResultInfo): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    BeginInvoke(ResultInfo, AsyncCallback, Object): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    EndInvoke(IAsyncResult): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+Class SLibrary_Warper.Peer+WarperProcess: AutoLayout, AnsiClass, Class, NestedPublic, Sealed, BeforeFieldInit
+  :System.MulticastDelegate
+    Void .ctor(System.Object, IntPtr): PrivateScope, Public, SpecialName, RTSpecialName
+  Methods:
+    Invoke(BTZPacket*): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    BeginInvoke(BTZPacket*, AsyncCallback, Object): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    EndInvoke(IAsyncResult): PrivateScope, Public, Final, Virtual, VtableLayoutMask

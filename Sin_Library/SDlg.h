@@ -2,6 +2,7 @@
 #include "CriticalSection.h"
 #include <functional>
 #include "resource.h"
+#include "SMasterServer.h"
 
 class SDlgBehavair
 {
@@ -33,6 +34,31 @@ public:
 	~TimerBehavair() {}
 };
 
+class SMasterServerBehavair
+	:public SDlgBehavair
+{
+public:
+	SMasterServerBehavair() {}
+	~SMasterServerBehavair() {}
+
+public:
+	bool ConnectMasterServer(const char* ip, int port) {
+		return server.ConnectToMasterServer(ip, port);
+	}
+
+	void SetTimer(HWND dlgHwnd)
+	{
+		::SetTimer(dlgHwnd, TIME_MASTER_SERVER_PING, 1000, NULL);
+	}
+
+	virtual void Behavair() {
+		server.m_server.OnPingCheck(GetTickCount());
+	}
+
+private:
+	SMasterServer server;
+};
+
 
 class SDlg
 {
@@ -43,8 +69,8 @@ public:
 		friend class SDlg;
 
 
-		DlgOption(HWND hWnd, HINSTANCE hi, DWORD dlgId, DLGPROC proc)
-			:dlgHwnd(hWnd), hInstance(hi), dlgResId(dlgId)
+		DlgOption(HWND hWnd, HINSTANCE hi, DWORD dlgId, DLGPROC proc, bool master_server = false)
+			:dlgHwnd(hWnd), hInstance(hi), dlgResId(dlgId), use_master_server(master_server)
 		{
 			dlgProc = proc;
 		}
@@ -61,6 +87,8 @@ public:
 		HWND dlgHwnd;
 		HINSTANCE hInstance;
 		DWORD dlgResId; // DLG ID
+
+		bool use_master_server;
 	};
 
 public:
@@ -69,10 +97,9 @@ public:
 	BOOL OnExit(HWND hWnd);
 
 	void SetTimer(HWND hWndList, HWND hWndEdit, DWORD time);
-	void SetRunTime();
 
 	void SetMessage(HWND hWnd, const char *s);
-	
+	void SetMessage(const char* s);
 	INT_PTR CALLBACK BTZ_PROC(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 public:
@@ -84,7 +111,8 @@ protected:
 	
 	DlgOption m_opt;
 
-	TimerBehavair m_behavair;
+	TimerBehavair m_Timerbehavair;
+	SMasterServerBehavair m_masterBehavair;
 };
 
 

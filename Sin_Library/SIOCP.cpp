@@ -156,12 +156,9 @@ bool SIOCP::RegisterCompletionPort(SOCKET socket, SPeer* context)
 			SOCKET_ERROR_LOG_CODE
 #endif
 
-				//UnLock();
-				return false;
+			return false;
 		}
 	}
-	//UnLock();
-
 	return true;
 }
 
@@ -287,12 +284,11 @@ unsigned WINAPI WorkThread(LPVOID pOL)
 				pIocp->PostCompletionStatus((DWORD)pCompletionKey, 0, (OVERLAPPED*)pOverlapped);
 				GameMessageManager::GetInstance()->SendGameMessage(GM_DISCONNECTUSER, (DWORD)pCompletionKey, (DWORD)pOverlapped, NULL);
 			}
-
 			continue;
 		}
 
 		//이미 연결이 끊김
-		if ((pCompletionKey == NULL) || (pCompletionKey->GetId() == 0)) continue;
+		if ((pCompletionKey == NULL) || (pCompletionKey->GetID() == 0)) continue;
 
 		//클라가 연결을 끊음
 		if (DwNumberBytes == 0)

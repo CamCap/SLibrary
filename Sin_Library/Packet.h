@@ -15,19 +15,76 @@ typedef unsigned long DWORD;
 
 #pragma pack(push, 1)
 
+#define PKT_BASIC_SIZE sizeof(BTZPacket)
 
 struct BTZPacket
 {
 public:
-	DWORD packet_id;
+	unsigned int packet_id;
 	short packet_size;
 
 	//가변 매크로 참고
 };
 
+struct ERR_PACKET
+	:public BTZPacket
+{
+	DWORD errcode;
+};
+
+#define PACKET_ID_ERR 0x00000001
+
+struct MOVE_SERVER_PACKET
+	:public BTZPacket
+{
+	DWORD server;
+	GUID id;
+};
+#define PACKET_ID_MOVE_SERVER 0x00000003
+
+
+struct MOVE_SERVER_REQ_PACKET
+	:public BTZPacket
+{
+	DWORD server;
+};
+#define PACKET_ID_MOVE_SERVER_REQ 0x00000004
+
+struct MOVE_SERVER_RES_PACKET
+	:public MOVE_SERVER_REQ_PACKET
+{
+	char server_ip[8];
+	int server_port;
+};
+
+#define PACKET_ID_MOVE_SERVER_RES 0x00000005
+
+struct MATCHING_PACKET
+	:public BTZPacket
+{
+	GUID room_id;
+	int matchnum;
+};
+
+#define PACKET_ID_MATCHING_REQ 0x00000006
+#define PACKET_ID_MATCHING_RES 0x00000007
+
+struct MATCHING_COMPLETE
+	:public MATCHING_PACKET
+{
+	bool IsComplete;
+};
+
+#define PACKET_ID_MATCHING_COMPLETE 0x00000008
+
 #pragma pack(pop)
 
 ///////////////
+
+#define ERROR_ID 0x000000000
+#define ERROR_CONNECT_USER 0x01111111 // 이미 접속한 ID
+#define ERROR_DISCONNECT_USER 0x02222222 // 접속이 끊어진 상태
+#define ERROR_SERVER_MOVE_ERROR 0x03333333
 
 ////////////////////////////////////////////////////////////
 

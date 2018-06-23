@@ -12,23 +12,19 @@ public:
     {
         InitializeCriticalSection(this);    
     }
-
     ~SCriticalSection()
     {
         DeleteCriticalSection(this);
     }
 };
-
 class SCriticalSectionLock
 {
 public:
-
     SCriticalSectionLock(SCriticalSection& cs)
         :m_pcs(&cs)
     {
         EnterCriticalSection(m_pcs);
     }
-
     ~SCriticalSectionLock()
     {
         if(m_pcs != NULL)
@@ -36,14 +32,9 @@ public:
     }
 
     explicit operator bool() { return true;}
-
 private:
-
     SCriticalSectionLock() {}
 
-private:
     SCriticalSection* m_pcs;    
 };
-
-
 #define CSLOCK( cs_ )   if( SCriticalSectionLock STRING_CAT( lock_, __LINE__ ) = cs_ )

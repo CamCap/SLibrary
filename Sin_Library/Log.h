@@ -1,48 +1,131 @@
 ﻿#pragma once
 #include <map>
 #include <fstream>
+#include <istream>
 #include <string>
 #include "CriticalSection.h"
+#include <iostream>
 
 //Write만 있고 Read 기능은 없음
 
-class File;
-
-
 typedef std::string string;
 typedef std::ofstream ofstream;
-typedef std::map<string, File*> FILE_MAP;
+typedef std::ifstream ifstream;
 
 class File
 {
-public:
-	bool FileOpen(string filename);
-	void FileClose();
-	bool FileWrite(string write);
-	bool FileRead(string read); // 이건 만들 생각 없음
+	ofstream out_stream;
+	ifstream in_stream;
 
 public:
-	File();
-	File(string filename);
-	~File();
+	File() {}
 
-private:
+	File(string filename) { this->operator()(filename); }
 
-	bool IsFileOpen();
+	~File()
+	{
+		if(out_stream.is_open()) out_stream.close();
+		if (in_stream.is_open()) in_stream.close();
+	}
 
-private:
-	ofstream m_file;
+	bool operator()(std::string filename, DWORD opt = std::ios::_Nocreate) {
+		out_stream.open(filename, std::ios::app || opt);
+		in_stream.open(filename, std::ios::in || opt);
+
+		return (out_stream.is_open() || in_stream.is_open()) ? true : false;
+	}
+
+	template <typename _type>
+	bool operator<<(_type str)
+	{
+		if (!out_stream.is_open())
+		{
+			return false;
+		}
+
+		out_stream << str;
+
+		return true;
+	}
+
+	template<class _Elem, class _Traits>
+	bool operator<<(std::ostream& os)
+	{
+		out_stream << std::endl;
+
+		return true;
+	}
+
+	template <typename uchar = unsigned char>
+	bool operator<<(uchar data[4][4])
+	{
+		if (!out_stream.is_open())
+		{
+			return false;
+		}
+
+		for(int i = 0 ; i < 4 ; i++)
+			for(int j = 0 ; j < 4 ; j++)
+				out_stream << (unsigned char)data[i][j];
+
+		return true;
+	}
+
+	template <typename _type>
+	bool operator>>(_type str)
+	{
+		if (!in_stream.is_open())
+		{
+			return false;
+		}
+
+		str = in_stream.get();
+		return true;
+	}
+
+
+	template <typename _type>
+	bool operator>>(std::string str)
+	{
+		if (!in_stream.is_open())
+		{
+			return false;
+		}
+
+		str = in_stream.getline();
+		return true;
+	}
+
+	template <typename uchar = unsigned char>
+	bool operator>>(uchar data[4][4])
+	{
+		if (!in_stream.is_open())
+		{
+			return false;
+		}
+		
+		int i = 0, j = 0;
+
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (in_stream.eof()) break;
+
+				data[i][j] = in_stream.get();
+			}
+		}
+
+		return true;
+	}
 };
 
 
-//싱글톤 패턴 사용
-//텍스트에 로그를 저장함.
-//아 잠시만 분류별로 파일을 만들어서 로그를 남기고 싶은데 어떻게 하지??
-//클래스 별로 나누는 것말고 다른 방법이 없을까?
-//싱글톤이 이게 맞던가? 대충 맞는 것같긴한데 에러가 뜰지도...?
-
 class Log
 {
+public:
+	typedef std::map<string, File*> FILE_MAP;
+
 public:
 	static Log* Instance();
 
@@ -70,3 +153,5 @@ private:
 //#define SOCKET_ERROR_LOG_CODE(FILE) Log::Instance()->WriteLog(FILE, WSAGetLastError());
 //#define ERROR_LOG(FILE,STRING) Log::Instance()->WriteLog(FILE, STRING);
 #define ERROR_LOG(STRING) Log::Instance()->WriteLog("Log_File", STRING)
+
+
